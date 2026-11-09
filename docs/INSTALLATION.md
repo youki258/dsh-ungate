@@ -23,7 +23,7 @@ echo "$DSH_HOME"        # 数据目录
 dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.4/dsh-ungate-0.2.4.tgz
 ```
 
-Desktop：把 `web` 换成 `desktop`。官方插件管理器维护 `dsh.bundle`；装完它会出现在左侧栏「Purge」。
+Desktop：把 `web` 换成 `desktop`。官方插件管理器维护 `dsh.bundle`；装完它会出现在左侧栏「Ungate」。
 
 ### 1.2 社区引导安装器
 
@@ -60,7 +60,7 @@ pnpm add /path/to/dsh-ungate-0.2.1.tgz
 
 ## 2. 装完必做
 
-1. 打开左侧栏 **Purge → 状态**，点「应用」。它会备份宿主、写 27 条补丁中的适用项，并创建快照。
+1. 打开左侧栏 **Ungate → 状态**，点「应用」。它会备份宿主、写 27 条补丁中的适用项，并创建快照。
 2. **完全退出 DSH 再打开**。Desktop：⌘Q / 托盘退出，不是关窗口；Web：重启服务进程。
 3. 核对：
 

@@ -85,7 +85,9 @@ try {
     env: { ...process.env, DSH_HOME: home },
     encoding: "utf8",
   });
-  if (!out.includes("Purge")) problems.push("status 输出异常");
+  const status = JSON.parse(out);
+  if (status.name !== "Ungate" || status.package !== pkg.name)
+    problems.push("status 输出异常");
   else ok("CLI status 可用");
 
   // 6) 自检在无宿主时给出 broken 而不是抛异常

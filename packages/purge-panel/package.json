@@ -1,7 +1,7 @@
 {
   "name": "dsh-purge-panel",
   "version": "1.1.2",
-  "description": "Purge 界面：独立右侧入口与原生风格设置页，官方 Purge 可单独更新。",
+  "description": "dsh-ungate 内置面板源码；--community 构建产物写入根 client.js 并随主包发行，本目录另保留独立构建/自测产物。",
   "type": "module",
   "main": "index.js",
   "exports": {
