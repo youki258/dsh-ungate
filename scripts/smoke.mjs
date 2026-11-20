@@ -87,7 +87,8 @@ try {
   });
   let statusReport = null;
   try { statusReport = JSON.parse(out); } catch { problems.push("status 不是合法 JSON"); }
-  if (statusReport && statusReport.package !== "dsh-ungate") problems.push(`status 的包名异常：${statusReport.package}`);
+  if (statusReport && statusReport.name !== "Ungate") problems.push(`status 的显示名异常：${statusReport.name}`);
+  else if (statusReport && statusReport.package !== "dsh-ungate") problems.push(`status 的包名异常：${statusReport.package}`);
   else if (statusReport && !statusReport.compatibility) problems.push("status 缺少 compatibility 段");
   else if (statusReport) ok("CLI status 可用");
 

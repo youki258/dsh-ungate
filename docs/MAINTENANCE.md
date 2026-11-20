@@ -64,7 +64,7 @@ token 在服务日志里：`sudo grep -aoE "token=[A-Za-z0-9_-]+" <log> | tail -
 
 1. `package.json`：`version`、`dshReleases`、`dshTarget`、`install.tarball`（必须是 `releases/download/v<版本>/dsh-ungate-<版本>.tgz`）。
 2. `release-notes.md` 首行改成 `# <版本>`，写清移除/变更/验证/已知问题。
-3. 当前文档里的版本行、兼容表同步；`docs/upstream/` 不动。
+3. 当前文档里的版本行、兼容表同步；上游历史资料归档已在 0.2.3 移除，原文见 git 历史，不要新建 `docs/upstream/`。
 4. `pnpm test` → `pnpm run smoke` → `pnpm run check:docs` → `pnpm run check:client`。
 5. 面板改了 `packages/purge-panel/src` 必须 `pnpm run build:client`，否则客户端 bundle 与源码不一致。
 6. 打 tag `v<版本>`，发行包与 `install.tarball` 对齐。
