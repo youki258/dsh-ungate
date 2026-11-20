@@ -16,7 +16,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat)](../LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff)](https://nodejs.org)
 
-Current version **0.2.5** · Verified **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5** (0.2.2 on the web and npm CLI surfaces only) · [中文](../README.md)
+Current version **0.2.6** · Verified **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5** (0.2.2 on the web and npm CLI surfaces only) · [中文](../README.md)
 
 </div>
 
@@ -38,7 +38,7 @@ It does not change the model itself and does not decide for you: scope is declar
 **Pinned tgz (recommended)**
 
 ```sh
-dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.5/dsh-ungate-0.2.5.tgz
+dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.6/dsh-ungate-0.2.6.tgz
 ```
 
 **npm**
@@ -91,7 +91,7 @@ Anchor regressions live in `test/patch-anchors.test.mjs`; per-release results ar
 | `ungate diagnose` / `reanchor …` | anchor-drift diagnosis / semi-automatic re-anchoring |
 | `ungate backup` / `rollback <id>` | snapshot / rollback |
 
-Every command and exit code: [CLI](CLI.md). `purge` and `dsh-purge` are legacy names for the same entry point and still work; the chat slash command is still `/purge`.
+Every command and exit code: [CLI](CLI.md). There is exactly one command name, `ungate` — the old `purge`/`dsh-purge` entry points were removed in 0.2.6; the chat slash command is still `/purge`.
 
 ## Updating
 

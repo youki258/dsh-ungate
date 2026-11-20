@@ -1,14 +1,24 @@
-#!/usr/bin/env node
-
 import * as core from "../lib/core.js";
 import * as rules from "../lib/rules.js";
 
-import { pathToFileURL } from "node:url";
-import { realpathSync } from "node:fs";
+
+// 子命令是唯一入口；老写法（--apply 等）仍然认，方便已有脚本与 CI。
+const ALIASES = {
+  "--apply": "apply",
+  "--revert": "revert",
+  "--uninstall": "uninstall",
+  "--edit": "edit",
+  "--status": "status",
+  "--help": "help",
+};
+function normalizeMode(args) {
+  const raw = args[0] || "status";
+  return ALIASES[raw] || raw.replace(/^--/, "");
+}
 
 function printStatus(state) {
   const out = [];
-  out.push("dsh-purge 状态 / Status");
+  out.push("Ungate 状态 / Status");
   out.push("  宿主 / surface " + (state.surface || "web"));
   out.push("  DSH_HOME      " + state.dsh_home);
   if (state.desktop_install) out.push("  桌面安装       " + state.desktop_install);
@@ -39,16 +49,16 @@ function printStatus(state) {
 export async function main(args = process.argv.slice(2), dependencies = {}) {
   const hostCore = dependencies.core || core;
   const hostRules = dependencies.rules || rules;
-  const mode = args.find((a) => ["--apply", "--revert", "--uninstall", "--status", "--edit", "--help"].includes(a));
+  const mode = normalizeMode(args);
 
-  if (mode === "--help" || args.includes("-h")) {
-    console.log(`dsh-purge 用法:
-  dsh-purge --status     显示状态
-  dsh-purge --apply      应用全部清洗（提示词+代码+shim+override）
-  dsh-purge --revert     回滚还原
-  dsh-purge --uninstall  卸载插件（已应用则先还原）
-  dsh-purge --edit       编辑注入文件 prompt-inject.md
-  dsh-purge --help       帮助`);
+  if (mode === "help" || args.includes("-h") || args.includes("--help")) {
+    console.log(`ungate 用法:
+  ungate status     显示宿主状态与逐条补丁状态
+  ungate apply      应用宿主补丁（含 shim 注入）
+  ungate revert     还原宿主补丁
+  ungate uninstall  卸载插件（已应用则先还原）
+  ungate edit       编辑注入文件 prompt-inject.md
+  ungate selfcheck  20 层自检（见 bin/community.js）`);
     return;
   }
 
@@ -56,7 +66,7 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
   console.log(printStatus(state));
   console.log("");
 
-  if (mode === "--apply") {
+  if (mode === "apply") {
     let failed = false;
     if (!state.ai_base) {
       console.log("[ERROR] " + hostCore.missingAiBaseMessage());
@@ -106,7 +116,7 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
       console.error("应用未完成 / Apply incomplete. 请处理上述错误；重启不能修复写入失败。");
       process.exitCode = 1;
     } else console.log("全部完成 / All done。重启 dsh 生效 / Restart dsh to take effect.");
-  } else if (mode === "--revert") {
+  } else if (mode === "revert") {
     let failed = false;
     const skipShim = process.argv.includes("--no-shim");
     if (state.ai_base || hostCore.enumeratePatchAiBases().length) {
@@ -131,7 +141,7 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
       process.exitCode = 1;
     } else console.log("回滚完成 / Revert done。重启 dsh 后恢复 / restart to restore.");
     console.log("注: prompt-inject.md 保留（用户文件）/ prompt-inject.md kept (user file)");
-  } else if (mode === "--uninstall") {
+  } else if (mode === "uninstall") {
     const { uninstallPurge, finishUninstallCleanup } = await import("../lib/uninstall.js");
     const result = await finishUninstallCleanup(await uninstallPurge());
     if (result.applied) console.log("  已检测到补丁，已还原回原版。");
@@ -145,7 +155,7 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
     }
     console.log("");
     console.log("卸载完成。请重启 dsh。");
-  } else if (mode === "--edit") {
+  } else if (mode === "edit") {
     const r = hostCore.editOverride(state.dsh_home);
     if (!r.ok && r.needCreate) {
       await hostCore.installOverride(state.dsh_home, true);
@@ -160,7 +170,4 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) main().catch((e) => {
-  console.error("[dsh-purge] error:", e);
-  process.exit(1);
-});
+export { main as hostMain };

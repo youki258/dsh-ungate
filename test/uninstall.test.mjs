@@ -24,8 +24,8 @@ test('public CLI uninstall executes file cleanup and preserves unrelated plugins
   for(const dir of [path.join(host,'dsh-agent-instructions/lib'),path.join(profile,'node_modules/dsh-ungate'),path.join(profile,'node_modules/other-plugin'),path.join(home,'dsh-purge'),path.join(home,'redteam'),path.join(home,'skills/keep')])fs.mkdirSync(dir,{recursive:true});
   fs.writeFileSync(path.join(profile,'package.json'),JSON.stringify({dependencies:{'dsh-ungate':'1','other-plugin':'1'},dsh:{profile:{bundles:['dsh-ungate','other-plugin']}}}));
   fs.writeFileSync(path.join(home,'redteam/keep.txt'),'keep');fs.writeFileSync(path.join(home,'skills/keep/SKILL.md'),'skill');
-  const cli=fileURLToPath(new URL('../bin/dsh-purge.js',import.meta.url));
-  const result=spawnSync(process.execPath,[cli,'--uninstall'],{env:{...process.env,DSH_HOME:home,DSH_BASE:host,DSH_PROFILE:'web',PURGE_PROFILE_DIR:profile,PURGE_DSH_CLI:''},encoding:'utf8',timeout:30000});
+  const cli=fileURLToPath(new URL('../bin/community.js',import.meta.url));
+  const result=spawnSync(process.execPath,[cli,'uninstall'],{env:{...process.env,DSH_HOME:home,DSH_BASE:host,DSH_PROFILE:'web',PURGE_PROFILE_DIR:profile,PURGE_DSH_CLI:''},encoding:'utf8',timeout:30000});
   assert.equal(result.status,0,result.stdout+'\n'+result.stderr);
   assert.equal(fs.existsSync(path.join(profile,'node_modules/dsh-ungate')),false);
   assert.equal(fs.existsSync(path.join(home,'dsh-purge')),false);

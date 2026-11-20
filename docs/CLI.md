@@ -2,7 +2,7 @@
 
 `ungate` 是 `bin/community.js` 的入口；没装进 PATH 时用 `node <插件目录>/bin/community.js`。裸 CLI 看不到实例信息，先显式指定 `DSH_HOME` 与 `PURGE_DSH_CLI`，否则自检只会报 `unknown`。
 
-旧名 `purge`、`dsh-purge` 指向同一入口，行为完全一致。聊天里的斜杠命令仍是 `/purge`（命令名与包名无关）。
+命令名只有 `ungate`：0.2.6 起 `purge`、`dsh-purge` 两个 bin 与 `bin/dsh-purge.js` 一并删除，宿主补丁面的动作（`apply`/`revert`/`uninstall`/`edit`）现在是同一份实现（`bin/host-commands.js`）。聊天里的斜杠命令仍是 `/purge`（命令名与包名无关）。
 
 ## 状态与证据
 

@@ -1,7 +1,7 @@
 # AGENTS.md — 本仓库的开发约定
 
 > 给在**这个仓库里改代码**的 agent 看。使用说明在 [README](README.md)，运维在 [docs/RUNBOOK.md](docs/RUNBOOK.md)。
-> 当前版本：**0.2.5**（`dsh-ungate` 0.2.5）· 27 条宿主补丁
+> 当前版本：**0.2.6**（`dsh-ungate` 0.2.6）· 27 条宿主补丁
 
 ## 先读哪几个文件
 
@@ -27,6 +27,8 @@
 - 插件 id 仍是 `dsh-purge`，数据目录仍是 `$DSH_HOME/dsh-purge-minimal/`：改包名不改这两处，否则已有配置失效。
 - `apply` 前必须留快照；`revert` 只撤自己写过的补丁，不整份覆盖宿主文件。
 - 面板的 HTTP 前缀仍是 `/dsh-purge/`，聊天斜杠命令仍是 `/purge`。
+- 运行时 section 名前缀 `dsh-purge*` / `dshpg-*` 不能改：宿主侧补丁把「名字以 `dsh-purge` 开头」的段当作 phase-1 保留（`lib/phase1-keep.js`），改名会让注入被宿主丢掉。
+- `[dsh-purge]` 补丁标记、`.dshpurge.bak` 宿主备份后缀、`__dshPurge*` 全局键同样是磁盘契约：改了就认不出已应用的宿主与旧备份。
 
 ## 测试与构建
 

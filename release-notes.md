@@ -1,3 +1,30 @@
+# 0.2.6
+
+> 2026-11-20 · `dsh-ungate` 0.2.6
+
+补丁表（27 条）与自检层（20 层）不变。这版只收一件事：把命令行收成**一个入口**，并删掉没有消费者的独立面板构建链。
+
+## 变更
+
+- **CLI 只剩 `ungate` 一个名字**：删除 `purge`、`dsh-purge` 两个 bin 与 `bin/dsh-purge.js`。宿主补丁面的动作（`apply` / `revert` / `uninstall` / `edit`）原先由 `bin/community.js` spawn 另一个脚本执行，现在两份实现合并成一份——`bin/host-commands.js` 导出 `hostMain()`，`bin/community.js` 直接调用；`toggle` 也不再起子进程。
+- **旧的 flag 写法仍然认**（`--apply` / `--revert` / `--uninstall` / `--edit` / `--status` 自动映射到子命令），已有脚本与 CI 里硬编码的调用不用改；但帮助文本与文档只写 `ungate <命令>`。
+- **`ungate help` 现在列全所有子命令**（此前 `help` 落到用法报错，退出码 1）。
+- **删除独立面板构建链**：`packages/purge-panel/{client.js,index.js,cordis.patch.yml,package-lock.json}`。它既不进 npm 包（`files` 白名单不含 `packages/`），npm 上也不存在 `dsh-purge-panel`；源码里 4 处 `__COMMUNITY__` 条件分支随之消失，面板只剩仓库根 `client.js` 一个产物（`pnpm run build:client`）。
+- **清理最后一层自述残留**：CLI 报错前缀 `Purge：` → `Ungate：`、安装完成提示里的「左侧 Purge → 状态」→「Ungate → 状态」、探针说明去掉 `purge` 字样；`scripts/i18n-pairing.mjs` 去掉已删 `README.zh-CN.md` 的切换器条目。
+- **发行包断言合并**：`ci.yml` 与 `release.yml` 用同一份白名单（禁 `AGENTS.md` / `docs/maintainer/` / `market/` / `test/` / `bench/`；必须有 `cordis.patch.yml` / `lib/index.js` / `client.js` / `README.md` / `docs/CLI.md`），不再检查已删除的 `docs/upstream/`。
+
+## 不变量（这版没有动，也不能动）
+
+- 运行时 section 名前缀 `dsh-purge*` / `dshpg-*`：宿主侧补丁按这个前缀决定哪些段在 phase-1 保留（`lib/phase1-keep.js`），改名等于让注入被宿主丢掉。
+- 面板 HTTP 前缀 `/dsh-purge/`、插件 id `dsh-purge`、数据目录 `$DSH_HOME/dsh-purge-minimal/`、聊天斜杠命令 `/purge`。
+- `[dsh-purge]` 补丁标记、`.dshpurge.bak` 宿主备份后缀、`__dshPurge*` 全局键——都是和磁盘上已应用宿主、旧备份对齐的契约。
+
+## 验证
+
+- `node scripts/check-docs.mjs`：`✓ 文档一致：0.2.6 · 补丁 27 条 · 已验证宿主 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5`。
+- `pnpm test` 449 项、0 失败；`pnpm run smoke`、`pnpm run test:ui`、`pnpm run check:client` 通过；`node packages/purge-panel/scripts/build.mjs --check` 通过。
+- 本机（DSH 0.2.2-rc.5、已应用 21 条）：`ungate selfcheck` 仍是 `applied 21 / na 6 / missing_file 0`，与 0.2.5 一致——这版只动命令行与构建链，不碰补丁定义。
+
 # 0.2.5
 
 > 2026-11-20 · `dsh-ungate` 0.2.5

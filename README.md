@@ -16,7 +16,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff)](https://nodejs.org)
 
-当前版本 **0.2.5** · 已验证 **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5**（0.2.2 限 web 与 npm CLI 面） · [English](docs/README.en.md)
+当前版本 **0.2.6** · 已验证 **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5**（0.2.2 限 web 与 npm CLI 面） · [English](docs/README.en.md)
 
 </div>
 
@@ -38,7 +38,7 @@
 **固定版本 tgz（推荐）**
 
 ```sh
-dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.5/dsh-ungate-0.2.5.tgz
+dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.6/dsh-ungate-0.2.6.tgz
 ```
 
 **npm**
@@ -91,7 +91,7 @@ ungate probe new
 | `ungate diagnose` / `reanchor …` | 锚点漂移诊断 / 半自动重锚 |
 | `ungate backup` / `rollback <id>` | 快照 / 回滚 |
 
-全部命令与退出码见 [CLI](docs/CLI.md)。`purge`、`dsh-purge` 是同一入口的旧名，仍然可用；聊天里的斜杠命令仍是 `/purge`。
+全部命令与退出码见 [CLI](docs/CLI.md)。命令名只有 `ungate` 一个（0.2.6 起去掉旧的 `purge`/`dsh-purge` 入口）；聊天里的斜杠命令仍是 `/purge`。
 
 ## 更新
 

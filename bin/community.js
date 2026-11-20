@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 import path from "node:path";
-import fs from "node:fs";
-import { spawnSync } from "node:child_process";
-import { Maintenance, compatibility, ROOT, PACKAGE } from "../lib/community.js";
+import { Maintenance, compatibility, PACKAGE } from "../lib/community.js";
 import { findDshHome, patchDrift } from "../lib/core.js";
 import { currentHost, diagnosticHost, hostSurface } from "../lib/instance.js";
 import { readOverrides, writeOverride, clearOverride } from "../lib/anchors.js";
@@ -12,10 +10,10 @@ import { installPreset, presetStatus } from "../lib/presets.js";
 import { readBoost, writeBoost } from "../lib/boost.js";
 import { readTuning, writeTuning } from "../lib/tuning.js";
 import { createProbe, readProbe } from "../lib/probe.js";
+import { hostMain } from "./host-commands.js";
 const rawArgs = process.argv.slice(2);
-// 原版 CLI 的全部动作（apply/revert/uninstall/edit/status）原样保留，
-// purge 只做转发，避免两套实现漂移。
-const LEGACY = { apply: "--apply", revert: "--revert", uninstall: "--uninstall", edit: "--edit", "legacy-status": "--status" };
+// 宿主补丁面的动作（apply/revert/uninstall/edit）只有一份实现：bin/host-commands.js。
+const HOST_OPS = new Set(["apply", "revert", "uninstall", "edit", "legacy-status"]);
 const [op = "status", argument, argument2] = rawArgs,
   home = process.env.DSH_HOME || findDshHome();
 // Resolve the running/explicit installation, not another machine-wide Desktop.
@@ -26,9 +24,30 @@ const maintenance = () => new Maintenance({
   profile: process.env.PURGE_PROFILE_DIR,
   aiBase,
 });
-if (LEGACY[op]) {
-  const run = spawnSync(process.execPath, [path.join(ROOT, "bin", "dsh-purge.js"), LEGACY[op], ...rawArgs.slice(1)], { stdio: "inherit" });
-  process.exitCode = run.status === null ? 1 : run.status;
+const HELP = `ungate 用法:
+  ungate status                 宿主状态、兼容级别、快照列表
+  ungate selfcheck [--json]     20 层自检（broken 时退出码 1）
+  ungate apply                  写入 27 条宿主补丁并注入 shim
+  ungate revert                 还原宿主补丁
+  ungate uninstall              卸载插件（已应用则先还原）
+  ungate edit                   编辑注入文件 prompt-inject.md
+  ungate toggle                 在位则还原、不在位则应用
+  ungate diagnose               锚点漂移诊断
+  ungate reanchor list|show|apply|clear <id>
+  ungate host-status            磁盘布局与运行入口证据
+  ungate probe [new]            运行时注入探针
+  ungate audit [--limit n]      动作审计
+  ungate boost on|off           尾部强化段
+  ungate inject head|tail|both  注入位置
+  ungate retry on|off           拒绝单次重试
+  ungate rewind on|off          回滚入口
+  ungate patches [list|enable|disable]  可选补丁开关
+  ungate preset [status|install]        无限制模式预设
+  ungate backup | prune | usage | rollback <id> | install <tgz>`;
+if (op === "help" || op === "-h" || op === "--help") {
+  console.log(HELP);
+} else if (HOST_OPS.has(op)) {
+  await hostMain([op === "legacy-status" ? "status" : op, ...rawArgs.slice(1)]);
 } else try {
   let result;
   if (op === "audit") {
@@ -266,13 +285,13 @@ if (LEGACY[op]) {
     if (on === 0 && off === 0) throw Error("宿主上没有任何可判定的补丁状态；请显式执行 apply 或 revert");
     const action = on >= off ? "revert" : "apply";
     // toggle 只管宿主补丁面；全局 shim 不随 toggle 还原（跨实例资产，显式 revert 才动）。
-    const extra = action === "revert" ? ["--no-shim"] : [];
-    const run = spawnSync(process.execPath, [path.join(ROOT, "bin", "dsh-purge.js"), action === "revert" ? "--revert" : "--apply", ...extra], { stdio: "inherit", env: process.env });
+    await hostMain([action]);
+    const exit = process.exitCode ?? 0;
     result = {
       action,
       host: target,
       before: { on, off, counts },
-      exit: run.status === null ? 1 : run.status,
+      exit,
       note: action === "revert"
         ? "已还原原生宿主；重启 dsh 服务后生效（systemctl restart dsh-web-iso 或 dsh-web）。"
         : "已应用 Ungate 补丁；重启 dsh 服务后生效（systemctl restart dsh-web-iso 或 dsh-web）。",
