@@ -11,7 +11,7 @@ function run(mode, report=[], shim='missing', errors=[], flash=true) {
  const code=`import {hostMain as main} from ${JSON.stringify(cli)};import {summarizeApplyReport} from ${JSON.stringify(core)};
  const state={ai_base:'/fixture',files:{},patch_status:{},shim_dir:'/fixture/bin'};
  await main([${JSON.stringify(mode)}],{rules:{resolveInjectText:()=>({text:'ordinary test'})},core:{
- gatherState:async()=>state,applyPatchesAllHosts:async()=>({hosts:[{aiBase:'/fixture'}],report:${JSON.stringify(report)}}),summarizeApplyReport,
+ ALL_PATCHES:[], gatherState:async()=>state,applyPatchesAllHosts:async()=>({hosts:[{aiBase:'/fixture'}],report:${JSON.stringify(report)}}),summarizeApplyReport,
  silenceCmdFlash:()=>({ok:${flash}}),patchShim:async()=>({dsh:${JSON.stringify(shim)}}),
  revertAllHosts:async()=>({reverted:[],errors:${JSON.stringify(errors)}}),revertShim:async()=>({dsh:${JSON.stringify(shim)}})}});`;
  return spawnSync(process.execPath,['--input-type=module','-e',code],{encoding:'utf8',env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});
@@ -35,4 +35,45 @@ test('actual CLI help works through npm-style executable symlink', {skip:process
  const r=spawnSync(process.execPath,[bin,'help'],{encoding:'utf8',env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});
  assert.equal(r.status,0,r.stderr);assert.match(r.stdout,/ungate 用法[\s\S]*ungate apply/s);
  }finally{fs.rmSync(root,{recursive:true,force:true});}
+});
+
+// audit-cli #1/#4: --no-shim 必须读 args（不是父进程 argv），且 toggle 方向不碰共享 shim。
+test('revert honors --no-shim from args and leaves shared shim untouched', () => {
+ const code=`import {hostMain as main} from ${JSON.stringify(cli)};
+ const state={ai_base:'/fixture',files:{},patch_status:{},shim_dir:'/fixture/bin'};
+ let shimCalls=0;
+ await main(['revert','--no-shim'],{core:{
+  ALL_PATCHES:[],gatherState:async()=>state,revertAllHosts:async()=>({reverted:[],errors:[]}),
+  revertShim:async()=>{shimCalls++;return {dsh:'no_backup'};},
+  patchStatus:async()=>({}),missingAiBaseMessage:()=>''}});
+ console.log('SHIM_CALLS='+shimCalls);`;
+ const r=spawnSync(process.execPath,['--input-type=module','-e',code],{encoding:'utf8',env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});
+ assert.equal(r.status,0,r.stderr);
+ assert.match(r.stdout,/SHIM_CALLS=0/,`--no-shim 没有阻止 revertShim: ${r.stdout}`);
+});
+test('plain revert still restores shim (backward compatible)', () => {
+ const code=`import {hostMain as main} from ${JSON.stringify(cli)};
+ const state={ai_base:'/fixture',files:{},patch_status:{},shim_dir:'/fixture/bin'};
+ let shimCalls=0;
+ await main(['revert'],{core:{
+  ALL_PATCHES:[],gatherState:async()=>state,revertAllHosts:async()=>({reverted:[],errors:[]}),
+  revertShim:async()=>{shimCalls++;return {dsh:'no_backup'};},
+  patchStatus:async()=>({}),missingAiBaseMessage:()=>''}});
+ console.log('SHIM_CALLS='+shimCalls);`;
+ const r=spawnSync(process.execPath,['--input-type=module','-e',code],{encoding:'utf8',env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});
+ assert.equal(r.status,0,r.stderr);
+ assert.match(r.stdout,/SHIM_CALLS=1/);
+});
+// audit-cli #2: 旧 flag 在生产入口上真的可用（不是死表）。
+test('legacy flags and help exit codes on the only bin', () => {
+ const bin=path.resolve('bin/community.js');
+ const call=(...args)=>spawnSync(process.execPath,[bin,...args],{encoding:'utf8',env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});
+ for(const a of ['--status','-h','--help','help']) assert.equal(call(a).status,0,`${a} should exit 0`);
+ assert.equal(call('bogus').status,1);
+ assert.match(call('bogus').stderr,/未知子命令/);
+});
+// audit-cli #4/#1: toggle 在单一入口上仍输出结构化 JSON，且回滚方向带 --no-shim。
+test('toggle routes through hostMain with --no-shim on revert direction', {skip:process.platform==='win32'},()=>{
+ const src=fs.readFileSync(path.resolve('bin/community.js'),'utf8');
+ assert.match(src,/action === "revert"\s*\?\s*\[action,\s*"--no-shim"\]/, 'toggle 回滚方向必须显式传 --no-shim');
 });

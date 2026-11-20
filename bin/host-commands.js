@@ -16,7 +16,7 @@ function normalizeMode(args) {
   return ALIASES[raw] || raw.replace(/^--/, "");
 }
 
-function printStatus(state) {
+function printStatus(state, hostCore = core) {
   const out = [];
   out.push("Ungate 状态 / Status");
   out.push("  宿主 / surface " + (state.surface || "web"));
@@ -28,18 +28,22 @@ function printStatus(state) {
       out.push(`    ${key.padEnd(22)} ${fp}`);
     }
   } else {
-    out.push("  插件根 / root  " + core.missingAiBaseMessage());
+    out.push("  插件根 / root  " + hostCore.missingAiBaseMessage());
   }
   out.push(`  shim 目录      ${state.shim_dir || "未定位 / not found"}`);
   out.push(`  备份 / backup  ${state.has_backup ? "有 / yes" : "无 / no"}`);
   out.push(`  注入文件       ${state.override_path}`);
   out.push(`  注入状态       ${state.override_status}`);
   out.push("");
-  out.push(`  补丁 ${state.patches_applied}/${core.ALL_PATCHES.length} 已清洗, ${state.patches_pending} 待清洗`);
-  for (const p of core.ALL_PATCHES) {
+  if (!state.ai_base) {
+    out.push("  补丁 未定位宿主 / not resolved —— 设 DSH_BASE 或 PURGE_DSH_CLI 后重试");
+  } else {
+  out.push(`  补丁 ${state.patches_applied}/${hostCore.ALL_PATCHES.length} 已清洗, ${state.patches_pending} 待清洗`);
+  for (const p of hostCore.ALL_PATCHES) {
     const s = state.patch_status[p.id];
     const mark = s === "applied" ? "✓" : s === "pending" ? "✗" : "·";
     out.push(`    ${mark} [#${String(p.id).padEnd(2)}] ${p.name.padEnd(30)} ${p.layer}/${p.layer_en} — ${s}`);
+  }
   }
   out.push("");
   out.push(`  shim: dsh.cmd=${state.shim_cmd}  dsh.ps1=${state.shim_ps1}  dsh=${state.shim_bin}`);
@@ -58,12 +62,12 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
   ungate revert     还原宿主补丁
   ungate uninstall  卸载插件（已应用则先还原）
   ungate edit       编辑注入文件 prompt-inject.md
-  ungate selfcheck  20 层自检（见 bin/community.js）`);
+  全部命令：ungate help`);
     return;
   }
 
   const state = await hostCore.gatherState();
-  console.log(printStatus(state));
+  console.log(printStatus(state, hostCore));
   console.log("");
 
   if (mode === "apply") {
@@ -71,12 +75,14 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
     if (!state.ai_base) {
       console.log("[ERROR] " + hostCore.missingAiBaseMessage());
       console.log("  fix: 把 DSH_BASE 指到含 dsh-agent-instructions/lib 的 @deepseek-ai 目录");
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
     const inject = hostRules.resolveInjectText(state.dsh_home);
     if (!inject.text) {
       console.log("[ERROR] 提示词和规则集都是空的，必须先添加提示词");
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
     const { hosts, report } = await hostCore.applyPatchesAllHosts(hostCore.ALL_PATCHES, {
       preserveClientBundles: false,
@@ -118,7 +124,7 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
     } else console.log("全部完成 / All done。重启 dsh 生效 / Restart dsh to take effect.");
   } else if (mode === "revert") {
     let failed = false;
-    const skipShim = process.argv.includes("--no-shim");
+    const skipShim = args.includes("--no-shim");
     if (state.ai_base || hostCore.enumeratePatchAiBases().length) {
       const { reverted, errors } = await hostCore.revertAllHosts();
       if (errors.length) failed = true;
@@ -133,6 +139,21 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
         if (typeof st === "string" && /^error:/.test(st)) failed = true;
         if (st === "reverted" || st === "stripped_inject") console.log(`  ✓ shim ${fname}: ${st}`);
         else console.log(`  - shim ${fname}: ${st}`);
+      }
+    }
+    // 还原后必须复核：备份缺失（例如宿主目录只读、从未写过 .bak）时
+    // revertAllHosts() 只会「没有备份可还原」，不能据此报告还原成功。
+    if (!failed && state.ai_base && typeof hostCore.patchStatus === "function") {
+      try {
+        const after = await hostCore.patchStatus(state.ai_base);
+        const left = Object.entries(after).filter(([, v]) => v === "applied" || v === "already").map(([id]) => id);
+        if (left.length) {
+          failed = true;
+          console.error(`  还有 ${left.length} 条补丁在宿主里（#${left.join("/#")}）：没有可用的 .bak 备份，或宿主目录不可写。`);
+        }
+      } catch (e) {
+        failed = true;
+        console.error(`  还原后复核失败：${e && e.message ? e.message : e}`);
       }
     }
     console.log("");
@@ -151,7 +172,8 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
     for (const e of result.errors || []) console.log(`  ⚠ ${e}`);
     if (!result.ok) {
       console.log("  卸载未完成：请检查上面的还原、注销或文件清理错误。");
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
     console.log("");
     console.log("卸载完成。请重启 dsh。");
@@ -170,4 +192,4 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
   }
 }
 
-export { main as hostMain };
+export { main as hostMain, normalizeMode };

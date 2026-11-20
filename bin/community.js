@@ -5,16 +5,16 @@ import { findDshHome, patchDrift } from "../lib/core.js";
 import { currentHost, diagnosticHost, hostSurface } from "../lib/instance.js";
 import { readOverrides, writeOverride, clearOverride } from "../lib/anchors.js";
 import { logAudit, readAudit } from "../lib/audit.js";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { installPreset, presetStatus } from "../lib/presets.js";
 import { readBoost, writeBoost } from "../lib/boost.js";
 import { readTuning, writeTuning } from "../lib/tuning.js";
 import { createProbe, readProbe } from "../lib/probe.js";
-import { hostMain } from "./host-commands.js";
+import { hostMain, normalizeMode } from "./host-commands.js";
 const rawArgs = process.argv.slice(2);
 // 宿主补丁面的动作（apply/revert/uninstall/edit）只有一份实现：bin/host-commands.js。
 const HOST_OPS = new Set(["apply", "revert", "uninstall", "edit", "legacy-status"]);
-const [op = "status", argument, argument2] = rawArgs,
+let [op = "status", argument, argument2] = rawArgs,
   home = process.env.DSH_HOME || findDshHome();
 // Resolve the running/explicit installation, not another machine-wide Desktop.
 const aiBase = currentHost();
@@ -44,10 +44,18 @@ const HELP = `ungate 用法:
   ungate patches [list|enable|disable]  可选补丁开关
   ungate preset [status|install]        无限制模式预设
   ungate backup | prune | usage | rollback <id> | install <tgz>`;
-if (op === "help" || op === "-h" || op === "--help") {
+// 老的 flag 写法（--apply / --revert / --status …）与子命令等价；-h/--help 一律打全表。
+const verb = normalizeMode(rawArgs);
+op = verb;
+if (verb === "help" || rawArgs.includes("-h") || rawArgs.includes("--help")) {
   console.log(HELP);
-} else if (HOST_OPS.has(op)) {
-  await hostMain([op === "legacy-status" ? "status" : op, ...rawArgs.slice(1)]);
+} else if (HOST_OPS.has(verb)) {
+  try {
+    await hostMain([verb === "legacy-status" ? "status" : verb, ...rawArgs.slice(1)]);
+  } catch (e) {
+    console.error("[ungate] " + (e && e.message ? e.message : e));
+    process.exitCode = 1;
+  }
 } else try {
   let result;
   if (op === "audit") {
@@ -285,7 +293,7 @@ if (op === "help" || op === "-h" || op === "--help") {
     if (on === 0 && off === 0) throw Error("宿主上没有任何可判定的补丁状态；请显式执行 apply 或 revert");
     const action = on >= off ? "revert" : "apply";
     // toggle 只管宿主补丁面；全局 shim 不随 toggle 还原（跨实例资产，显式 revert 才动）。
-    await hostMain([action]);
+    await hostMain(action === "revert" ? [action, "--no-shim"] : [action]);
     const exit = process.exitCode ?? 0;
     result = {
       action,
@@ -308,7 +316,7 @@ if (op === "help" || op === "-h" || op === "--help") {
     });
   } else
     throw Error(
-      "用法：ungate status | host-status | host-check | diagnose | selfcheck [--json] | toggle | boost on|off | patches [list|enable ids|disable ids] | probe [new] | audit [--limit n] | preset [status|install] | backup [prune|usage] | rollback <备份ID> | migrate <tgz> | apply | revert | uninstall | edit",
+      `未知子命令: ${op}\n` + "用法：ungate status | host-status | host-check | diagnose | selfcheck [--json] | toggle | boost on|off | patches [list|enable ids|disable ids] | probe [new] | audit [--limit n] | preset [status|install] | backup [prune|usage] | rollback <备份ID> | migrate <tgz> | apply | revert | uninstall | edit",
     );
   console.log(JSON.stringify(result, null, 2));
 } catch (e) {
