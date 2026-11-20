@@ -44,8 +44,10 @@ dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/dow
 **npm**
 
 ```sh
-dsh plugin --profile web add dsh-ungate@0.2.5
+dsh plugin --profile web add dsh-ungate@0.2.2
 ```
+
+npm lags at 0.2.2 while the publishing account is being recovered; 0.2.3 and later ship as the tgz above.
 
 **Community installer** (backup migration, old-package swap; review with `--dry-run` first)
 

@@ -44,8 +44,10 @@ dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/dow
 **npm**
 
 ```sh
-dsh plugin --profile web add dsh-ungate@0.2.5
+dsh plugin --profile web add dsh-ungate@0.2.2
 ```
+
+npm 上的版本停在 0.2.2（发布账号正在取回，0.2.3 之后的版本先走上面的 tgz）。
 
 **社区安装器**（备份迁移、旧包换装，先 `--dry-run` 看一遍）
 
