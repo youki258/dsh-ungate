@@ -293,17 +293,29 @@ if (verb === "help" || rawArgs.includes("-h") || rawArgs.includes("--help")) {
     if (on === 0 && off === 0) throw Error("宿主上没有任何可判定的补丁状态；请显式执行 apply 或 revert");
     const action = on >= off ? "revert" : "apply";
     // toggle 只管宿主补丁面；全局 shim 不随 toggle 还原（跨实例资产，显式 revert 才动）。
-    await hostMain(action === "revert" ? [action, "--no-shim"] : [action]);
-    const exit = process.exitCode ?? 0;
+    // hostMain 内部失败不能吞掉结构化 JSON：即便 apply/revert 抛错，也要把 exit/note 交回调用方。
+    let exit = 0;
+    let failure = "";
+    try {
+      await hostMain(action === "revert" ? [action, "--no-shim"] : [action]);
+      exit = process.exitCode ?? 0;
+      if (exit) failure = "动作未完成，见 stdout 的错误明细。";
+    } catch (e) {
+      exit = 1;
+      failure = e && e.message ? e.message : String(e);
+    }
     result = {
       action,
       host: target,
       before: { on, off, counts },
       exit,
-      note: action === "revert"
-        ? "已还原原生宿主；重启 dsh 服务后生效（systemctl restart dsh-web-iso 或 dsh-web）。"
-        : "已应用 Ungate 补丁；重启 dsh 服务后生效（systemctl restart dsh-web-iso 或 dsh-web）。",
+      note: exit
+        ? failure
+        : action === "revert"
+          ? "已还原原生宿主；重启 dsh 服务后生效（systemctl restart dsh-web-iso 或 dsh-web）。"
+          : "已应用 Ungate 补丁；重启 dsh 服务后生效（systemctl restart dsh-web-iso 或 dsh-web）。",
     };
+    if (exit) process.exitCode = 1;
   } else if (op === "backup") result = await maintenance().backup("cli");
   else if (op === "prune") result = await maintenance().pruneLocked();
   else if (op === "usage") result = maintenance().usage();

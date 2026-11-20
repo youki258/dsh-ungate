@@ -34,7 +34,7 @@
 
 ```sh
 pnpm install --frozen-lockfile --allow-build=esbuild
-pnpm test               # 449 项
+pnpm test               # 455 项
 pnpm run check:docs     # 版本、兼容声明、残留引用
 pnpm run smoke          # 打包后验证
 pnpm run test:ui        # 面板 bundle 契约

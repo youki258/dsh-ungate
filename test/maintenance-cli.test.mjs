@@ -77,3 +77,33 @@ test('toggle routes through hostMain with --no-shim on revert direction', {skip:
  const src=fs.readFileSync(path.resolve('bin/community.js'),'utf8');
  assert.match(src,/action === "revert"\s*\?\s*\[action,\s*"--no-shim"\]/, 'toggle 回滚方向必须显式传 --no-shim');
 });
+
+// audit-invariants: optional/softSettle/native-state 补丁天然 applied 不能被误报为回滚失败。
+test('revert recheck ignores optional/soft/native patches that read applied by default', () => {
+ const code=`import {hostMain as main} from ${JSON.stringify(cli)};
+ const state={ai_base:'/fixture',files:{},patch_status:{},shim_dir:''};
+ await main(['revert','--no-shim'],{core:{
+  ALL_PATCHES:[], hardPatchIds:()=>[91],
+  gatherState:async()=>state,revertAllHosts:async()=>({reverted:[],errors:[]}),
+  // #48 softSettle / #92 optional 天然 applied；只有硬补丁 #91 才是真残留。
+  patchStatus:async()=>({48:'applied',92:'applied',90:'applied',91:'applied'}),
+  revertShim:async()=>({}),missingAiBaseMessage:()=>''}});
+ console.log('DONE');`;
+ const r=spawnSync(process.execPath,['--input-type=module','-e',code],{encoding:'utf8',env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});
+ assert.match(r.stderr,/还有 1 条硬补丁在宿主里（#91@/,`误报或漏报: ${r.stdout}\n${r.stderr}`);
+ assert.match(r.stderr,/Revert incomplete/);
+});
+test('revert recheck passes when only soft/optional patches are applied', () => {
+ const code=`import {hostMain as main} from ${JSON.stringify(cli)};
+ const state={ai_base:'/fixture',files:{},patch_status:{},shim_dir:''};
+ await main(['revert','--no-shim'],{core:{
+  ALL_PATCHES:[], hardPatchIds:()=>[91],
+  gatherState:async()=>state,revertAllHosts:async()=>({reverted:[],errors:[]}),
+  patchStatus:async()=>({48:'applied',92:'applied',90:'applied'}),
+  revertShim:async()=>({}),missingAiBaseMessage:()=>''}});
+ console.log('DONE');`;
+ const r=spawnSync(process.execPath,['--input-type=module','-e',code],{encoding:'utf8',env:{...process.env,ELECTRON_RUN_AS_NODE:'1'}});
+ assert.equal(r.status,0,r.stderr);
+ assert.doesNotMatch(r.stderr,/还有.*硬补丁/);
+ assert.match(r.stdout,/Revert done/);
+});

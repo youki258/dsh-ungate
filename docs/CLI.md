@@ -69,6 +69,7 @@ ungate probe new
 | 变量 | 作用 |
 | --- | --- |
 | `DSH_HOME` | 实例的 home 目录（默认 `~/.dsh`） |
+| `DSH_BASE` | 显式指定插件安装根（宿主目录不可自动定位时） |
 | `PURGE_DSH_CLI` | 显式指定宿主 CLI 入口 |
 | `PURGE_PROFILE_DIR` | 显式指定 profile 目录 |
 | `PURGE_BOOST_ORDER` | 覆盖强化段的 section order |

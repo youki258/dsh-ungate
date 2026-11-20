@@ -7,8 +7,8 @@
 ## 变更
 
 - **CLI 只剩 `ungate` 一个名字**：删除 `purge`、`dsh-purge` 两个 bin 与 `bin/dsh-purge.js`。宿主补丁面的动作（`apply` / `revert` / `uninstall` / `edit`）原先由 `bin/community.js` spawn 另一个脚本执行，现在两份实现合并成一份——`bin/host-commands.js` 导出 `hostMain()`，`bin/community.js` 直接调用；`toggle` 也不再起子进程。
-- **旧的 flag 写法仍然认**（`--apply` / `--revert` / `--uninstall` / `--edit` / `--status` 自动映射到子命令），已有脚本与 CI 里硬编码的调用不用改；但帮助文本与文档只写 `ungate <命令>`。
-- **`ungate help` 现在列全所有子命令**（此前 `help` 落到用法报错，退出码 1）。
+- **旧的 flag 写法仍然认**（`--apply` / `--revert` / `--uninstall` / `--edit` / `--status` 自动映射到子命令）；但帮助文本与文档只写 `ungate <命令>`。原先被删的 `purge` / `dsh-purge` 可执行名不再提供，硬编码那两个名字的脚本需改用 `ungate`。
+- **`ungate help` 列出常用子命令**（此前 `help` 落到用法报错，退出码 1）；完整命令见 `docs/CLI.md`。
 - **删除独立面板构建链**：`packages/purge-panel/{client.js,index.js,cordis.patch.yml,package-lock.json}`。它既不进 npm 包（`files` 白名单不含 `packages/`），npm 上也不存在 `dsh-purge-panel`；源码里 4 处 `__COMMUNITY__` 条件分支随之消失，面板只剩仓库根 `client.js` 一个产物（`pnpm run build:client`）。
 - **清理最后一层自述残留**：CLI 报错前缀 `Purge：` → `Ungate：`、安装完成提示里的「左侧 Purge → 状态」→「Ungate → 状态」、探针说明去掉 `purge` 字样；`scripts/i18n-pairing.mjs` 去掉已删 `README.zh-CN.md` 的切换器条目。
 - **发行包断言合并**：`ci.yml` 与 `release.yml` 用同一份白名单（禁 `AGENTS.md` / `docs/maintainer/` / `market/` / `test/` / `bench/`；必须有 `cordis.patch.yml` / `lib/index.js` / `client.js` / `README.md` / `docs/CLI.md`），不再检查已删除的 `docs/upstream/`。
@@ -22,7 +22,7 @@
 ## 验证
 
 - `node scripts/check-docs.mjs`：`✓ 文档一致：0.2.6 · 补丁 27 条 · 已验证宿主 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5`。
-- `pnpm test` 449 项、0 失败；`pnpm run smoke`、`pnpm run test:ui`、`pnpm run check:client` 通过；`node packages/purge-panel/scripts/build.mjs --check` 通过。
+- `pnpm test` 455 项、0 失败；`pnpm run smoke`、`pnpm run test:ui`、`pnpm run check:client` 通过；`node packages/purge-panel/scripts/build.mjs --check` 通过。
 - 本机（DSH 0.2.2-rc.5、已应用 21 条）：`ungate selfcheck` 仍是 `applied 21 / na 6 / missing_file 0`，与 0.2.5 一致——这版只动命令行与构建链，不碰补丁定义。
 
 # 0.2.5
@@ -44,7 +44,7 @@
 ## 验证
 
 - `node scripts/check-docs.mjs`：`✓ 文档一致：0.2.5 · 补丁 27 条 · 已验证宿主 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5`。
-- `pnpm test` 449 项、0 失败；`pnpm run smoke`、面板双 bundle 校验通过。
+- `pnpm test` 455 项、0 失败；`pnpm run smoke`、面板双 bundle 校验通过。
 - 0.2.2-rc.5 真机（npm CLI 宿主）：`ungate apply` 写入 21 条、6 条 `na`、零失败，重启 `dsh-web` 后面板状态 `applied 21 / pending 0 / na 6 / lost false`，自检 `state=ok`、`broken` 为空。
 
 # 0.2.4
@@ -70,7 +70,7 @@
 
 ## 验证
 
-- `node scripts/check-docs.mjs`、`pnpm test`（449 项）、`pnpm run smoke`、面板双 bundle 校验全部通过。
+- `node scripts/check-docs.mjs`、`pnpm test`（455 项）、`pnpm run smoke`、面板双 bundle 校验全部通过。
 - 旧名兼容：`purge status` 与 `ungate status` 走同一分支，输出一致。
 - 0.2.2-rc.5（npm `latest`）宿主上的补丁表解析：27 条 id 全部有结果——21 条 `pending`（锚点命中、待写入）、6 条 `na`（#45/#46/#82/#83/#84/#92 桌面专属），`missing_file 0`、`drifted 0`。写入侧在本机因宿主在只读的 `/usr/lib/node_modules` 而中止（`Host backup failed (63 files)`），这条是权限问题，不是锚点问题。
 - `bench`（oc2api / deepseek-v4.1-flash-free，10 题 × 2 臂）：无注入 4 交付 / 3 拒答，注入 7 交付 / 1 拒答；两臂都有 2 题被模型的 `function_call` 截断，单列为测量失败。
@@ -94,7 +94,7 @@
 - 消融实验（API 层，DeepSeek-v4.1-flash / GLM-5.3-flash）：新版人设多轮升级链 15/15 直通（baseline 早期崩），拒绝恢复条款证伪后删除。
 - 真实 harness 链路（`dsh --profile headless` 一次性探针，标准模式 + 注入层）：DCSync 授权演练与 AMSI patch 两道灰色域题直通交付，与裸模型 baseline 形成对照；`PURGE-PROBE` nonce 回显闭环。
 - 装配级验证 10/10：persona 六机制锚点在位，被证伪条款三处删净。
-- `node --test`（449 项）、`pnpm run check:docs`、面板 bundle 校验通过。
+- `node --test`（455 项）、`pnpm run check:docs`、面板 bundle 校验通过。
 
 # 0.2.2
 
@@ -111,7 +111,7 @@
 
 - 主实例（home `/home/kali/.dsh`）：`[inject.read]` 由 `rawBytes=32448 outBytes=922` 变为 **`outBytes=32371`**。
 - 模型侧取证（`DSH_HOME=/home/kali/.dsh-iso`，`dsh --profile headless` 真调用）：要求复述正文第 20000 字节处的英文原句，模型逐字返回 `Progress status lines are body text rendered in the UI in real time; …`。
-- `node --test`（449 项）与 `pnpm run check:docs` 通过；`pnpm run test:ui` 与面板 bundle 校验通过。
+- `node --test`（455 项）与 `pnpm run check:docs` 通过；`pnpm run test:ui` 与面板 bundle 校验通过。
 
 # 0.2.1
 

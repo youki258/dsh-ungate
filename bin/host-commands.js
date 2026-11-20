@@ -143,13 +143,29 @@ export async function main(args = process.argv.slice(2), dependencies = {}) {
     }
     // 还原后必须复核：备份缺失（例如宿主目录只读、从未写过 .bak）时
     // revertAllHosts() 只会「没有备份可还原」，不能据此报告还原成功。
-    if (!failed && state.ai_base && typeof hostCore.patchStatus === "function") {
+    if (!failed && typeof hostCore.patchStatus === "function") {
       try {
-        const after = await hostCore.patchStatus(state.ai_base);
-        const left = Object.entries(after).filter(([, v]) => v === "applied" || v === "already").map(([id]) => id);
+        // 只复核硬补丁：optional / layout-soft / native-state 补丁在宿主原生或上游已达标时
+        // 也会显示 applied，把它们算进去会误报「回滚未完成」。
+        const hard = new Set(typeof hostCore.hardPatchIds === "function" ? hostCore.hardPatchIds() : []);
+        // 复核所有枚举到的宿主（revertAllHosts 会遍历它们），不只是 state.ai_base。
+        let bases = [state.ai_base].filter(Boolean);
+        if (typeof hostCore.enumeratePatchAiBases === "function") {
+          const found = hostCore.enumeratePatchAiBases();
+          if (found && found.length) bases = found;
+        }
+        const left = [];
+        for (const base of bases) {
+          const after = await hostCore.patchStatus(base);
+          for (const [id, v] of Object.entries(after)) {
+            if (hard.has(Number(id)) && (v === "applied" || v === "pending" || v === "partial" || v === "drifted")) {
+              left.push(`${id}@${base}`);
+            }
+          }
+        }
         if (left.length) {
           failed = true;
-          console.error(`  还有 ${left.length} 条补丁在宿主里（#${left.join("/#")}）：没有可用的 .bak 备份，或宿主目录不可写。`);
+          console.error(`  还有 ${left.length} 条硬补丁在宿主里（#${left.join(" / #")}）：没有可用的 .bak 备份，或宿主目录不可写。`);
         }
       } catch (e) {
         failed = true;

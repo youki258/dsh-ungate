@@ -112,6 +112,6 @@ ungate uninstall         # 卸载插件，清理本 home 内的插件目录与�
 
 ## 7. 测试与验收边界
 
-- `pnpm test`：449 项，干净环境 0 失败；从 DSH 会话里跑也成立（安装器不再继承会话 profile）。
+- `pnpm test`：455 项，干净环境 0 失败；从 DSH 会话里跑也成立（安装器不再继承会话 profile）。
 - `pnpm run smoke`：打包 → 解包 → 无依赖启动 → 导入 → 预设解析。
 - 真机验收（Electron / Windows 换包 / macOS 交接）使用隔离实例，不能拿 Node 单测冒充。

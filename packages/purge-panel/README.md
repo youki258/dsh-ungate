@@ -5,4 +5,4 @@
 - 源码在 `src/`，React + 自研 `dshpp-` 样式前缀，独立 locale 命名空间。
 - 产物只有一份：仓库根 `client.js`，由 `scripts/build.mjs` 生成，不要手改。
 - 构建：`pnpm run build:client`；校验：`pnpm run check:client`。
-- 本目录不是独立插件，不进 npm 包；版本号与主包一致。
+- 构建产物写入仓库根 `client.js` 并随主包发行，版本号由根 `package.json` 注入；本目录的 `version` 字段不参与发行。
