@@ -56,8 +56,12 @@ jobs:
               process.exit(1);
             }
             const list = execFileSync("tar", ["-tzf", `dist/${tgz}`], { encoding: "utf8" });
-            if (list.includes("package/docs/upstream/")) {
-              console.error("docs/upstream 不应进发行包");
+            const banned = ["package/AGENTS.md", "package/docs/maintainer/", "package/market/", "package/test/", "package/bench/"];
+            const missing = ["package/cordis.patch.yml", "package/lib/index.js", "package/client.js", "package/README.md", "package/docs/CLI.md"];
+            const bad = banned.filter((p) => list.includes(p));
+            const gone = missing.filter((p) => !list.includes(p));
+            if (bad.length || gone.length) {
+              console.error("tarball content check failed", { banned_hits: bad, required_missing: gone });
               process.exit(1);
             }
             console.log(`tarball ok: ${tgz} (${list.split("\n").length - 1} files)`);

@@ -1780,26 +1780,9 @@ function CommunityCompatibilityNote() {
     compat && compat.message ? " " + compat.message : ""
   );
 }
-function CompatibilityNote({ status }) {
-  if (true) return h(CommunityCompatibilityNote);
-  if (!status) return null;
-  const v = String(status.plugin_version || "");
-  const valid = typeof status.patches_total === "number" && !!v;
-  if (valid && v === "1.1.71") return null;
-  return h(
-    "p",
-    {
-      role: "status",
-      className: "dshpp-hint",
-      style: { margin: "0 20px 10px" }
-    },
-    valid ? "\u5B98\u65B9\u7248\u672C " + v + "\uFF1B\u6B64\u754C\u9762\u5DF2\u9A8C\u8BC1 1.1.71\u3002\u5982\u9047\u8BBE\u7F6E\u5F02\u5E38\uFF0C\u8BF7\u66F4\u65B0\u754C\u9762\u63D2\u4EF6\u3002" : "\u65E0\u6CD5\u786E\u8BA4\u5B98\u65B9 Purge \u63A5\u53E3\u3002\u8BF7\u68C0\u67E5\u5B98\u65B9\u63D2\u4EF6\u662F\u5426\u542F\u7528\uFF0C\u6216\u66F4\u65B0\u754C\u9762\u63D2\u4EF6\u3002"
-  );
-}
 function SettingsRoot(props = {}) {
   const t = typeof props.t === "function" ? props.t : useT();
   const [page, setPage] = useState("status");
-  const [backendStatus, setBackendStatus] = useState(null);
   const [visited, setVisited] = useState({ status: true });
   const select = (id) => {
     setPage(id);
@@ -1820,7 +1803,7 @@ function SettingsRoot(props = {}) {
         "Ungate 0.2.5"
       )
     ),
-    h(CompatibilityNote, { status: backendStatus }),
+    h(CommunityCompatibilityNote),
     h(
       "nav",
       { className: "dshpp-native-nav", "aria-label": "Ungate \u8BBE\u7F6E\u5206\u7C7B" },
@@ -1847,7 +1830,7 @@ function SettingsRoot(props = {}) {
       h(
         "div",
         { hidden: !["status", "prompt", "more"].includes(page) },
-        h(PurgifySection, { page, onStatus: setBackendStatus })
+        h(PurgifySection, { page })
       ),
       h(
         "div",
@@ -1855,7 +1838,7 @@ function SettingsRoot(props = {}) {
         h(
           "p",
           { className: "dshpp-attribution" },
-          true ? "\u57FA\u4E8E YuJunZhiXue/dsh-purge 1.1.71 \u72EC\u7ACB\u7EF4\u62A4\uFF0C\u4FDD\u7559\u539F\u4F5C\u8005\u7F72\u540D\uFF1B\u66F4\u65B0\u4EC5\u6765\u81EA\u672C fork\u3002" : "\u754C\u9762\u72EC\u7ACB\u7EF4\u62A4\uFF1B\u5B98\u65B9 Purge \u53EF\u5355\u72EC\u66F4\u65B0\u3002\u57FA\u4E8E YuJunZhiXue/dsh-purge 1.1.71\uFF08MIT\uFF09\u3002"
+          "\u57FA\u4E8E YuJunZhiXue/dsh-purge 1.1.71\uFF08MIT\uFF09\uFF1B\u66F4\u65B0\u4EC5\u6765\u81EA\u672C fork\uFF0C\u672C fork \u72EC\u7ACB\u7EF4\u62A4\u5E76\u4FDD\u7559\u539F\u4F5C\u8005\u7F72\u540D\u3002"
         )
       )
     )
@@ -2172,11 +2155,7 @@ function PurgePage() {
           "p",
           null,
           active[2],
-          true ? h(
-            "span",
-            { className: "dshpp-page-ver" },
-            "Ungate 0.2.5"
-          ) : null
+          h("span", { className: "dshpp-page-ver" }, "Ungate 0.2.5")
         )
       )
     ),
@@ -2230,7 +2209,7 @@ function PurgePage() {
     h(
       "footer",
       { className: "dshpp-page-foot" },
-      true ? "\u57FA\u4E8E YuJunZhiXue/dsh-purge 1.1.71 \u72EC\u7ACB\u7EF4\u62A4 \xB7 MIT \xB7 \u4FDD\u7559\u539F\u4F5C\u8005\u7F72\u540D" : "\u754C\u9762\u72EC\u7ACB\u7EF4\u62A4 \xB7 \u57FA\u4E8E YuJunZhiXue/dsh-purge 1.1.71\uFF08MIT\uFF09"
+      "\u57FA\u4E8E YuJunZhiXue/dsh-purge 1.1.71\uFF08MIT\uFF09\xB7 \u672C fork \u72EC\u7ACB\u7EF4\u62A4\u5E76\u4FDD\u7559\u539F\u4F5C\u8005\u7F72\u540D"
     )
   );
 }

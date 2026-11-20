@@ -14,7 +14,7 @@ export function compatibilityLevelText(t, level) {
 
 /**
  * 社区版兼容提示：读取后端 /dsh-purge/community 报告的宿主版本与兼容级别。
- * 原版 1.1.71 的 CompatibilityNote 只对官方接口版本告警；社区版换成本 fork
+ * 原版 1.1.71 的 CompatibilityNote 只对官方接口版本告警；这里换成本 fork
  * 真实的宿主版本/兼容级别，且永远渲染（不再无条件 return null）。
  */
 export function CommunityCompatibilityNote() {
@@ -52,31 +52,9 @@ export function CommunityCompatibilityNote() {
   );
 }
 
-export function CompatibilityNote({ status }) {
-  if (__COMMUNITY__) return h(CommunityCompatibilityNote);
-  if (!status) return null;
-  const v = String(status.plugin_version || "");
-  const valid = typeof status.patches_total === "number" && !!v;
-  if (valid && v === "1.1.71") return null;
-  return h(
-    "p",
-    {
-      role: "status",
-      className: "dshpp-hint",
-      style: { margin: "0 20px 10px" },
-    },
-    valid
-      ? "官方版本 " +
-          v +
-          "；此界面已验证 1.1.71。如遇设置异常，请更新界面插件。"
-      : "无法确认官方 Purge 接口。请检查官方插件是否启用，或更新界面插件。",
-  );
-}
-
 export function SettingsRoot(props = {}) {
   const t = typeof props.t === "function" ? props.t : useT();
   const [page, setPage] = useState("status");
-  const [backendStatus, setBackendStatus] = useState(null);
   const [visited, setVisited] = useState({ status: true });
   const select = (id) => {
     setPage(id);
@@ -97,7 +75,7 @@ export function SettingsRoot(props = {}) {
         "Ungate " + __PANEL_VERSION__,
       ),
     ),
-    h(CompatibilityNote, { status: backendStatus }),
+    h(CommunityCompatibilityNote),
     h(
       "nav",
       { className: "dshpp-native-nav", "aria-label": "Ungate 设置分类" },
@@ -124,7 +102,7 @@ export function SettingsRoot(props = {}) {
       h(
         "div",
         { hidden: !["status", "prompt", "more"].includes(page) },
-        h(PurgifySection, { page, onStatus: setBackendStatus }),
+        h(PurgifySection, { page }),
       ),
       h(
         "div",
@@ -132,9 +110,7 @@ export function SettingsRoot(props = {}) {
         h(
           "p",
           { className: "dshpp-attribution" },
-          __COMMUNITY__
-            ? "基于 YuJunZhiXue/dsh-purge 1.1.71 独立维护，保留原作者署名；更新仅来自本 fork。"
-            : "界面独立维护；官方 Purge 可单独更新。基于 YuJunZhiXue/dsh-purge 1.1.71（MIT）。",
+          "基于 YuJunZhiXue/dsh-purge 1.1.71（MIT）；更新仅来自本 fork，本 fork 独立维护并保留原作者署名。",
         ),
       ),
     ),

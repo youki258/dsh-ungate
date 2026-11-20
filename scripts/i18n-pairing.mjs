@@ -211,7 +211,7 @@ export function verifyPair(pair = PAIRS[0]) {
   const problems = [];
   const enText = read(pair.en);
   const zhText = read(pair.zh);
-  const switcher = [path.basename(pair.en), path.basename(pair.zh), "README.zh-CN.md"];
+  const switcher = [path.basename(pair.en), path.basename(pair.zh)];
   const enSig = signature(enText, { switcher });
   const zhSig = signature(zhText, { switcher });
   problems.push(...diffSignatures(zhSig, enSig, pair.zh, pair.en));
@@ -260,7 +260,7 @@ function main(argv) {
     process.exit(failed ? 1 : 0);
   }
   for (const pair of PAIRS) {
-    const switcher = [path.basename(pair.en), path.basename(pair.zh), "README.zh-CN.md"];
+    const switcher = [path.basename(pair.en), path.basename(pair.zh)];
     const computed = computeRecord(read(pair.en), read(pair.zh), switcher);
     if (computed.error) {
       console.error(`✗ ${pair.zh} ↔ ${pair.en} ${computed.error}`);

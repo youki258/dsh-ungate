@@ -38,7 +38,7 @@ pnpm run smoke          # 打包后验证
 pnpm run test:ui        # 面板 bundle 契约
 ```
 
-- 改面板源码要重建**两个** bundle：`node packages/purge-panel/scripts/build.mjs --community`（写仓库根 `client.js`）与不带 `--community`（写 `packages/purge-panel/client.js`）。
+- 改面板源码要重建 bundle：`pnpm run build:client`（产物写仓库根 `client.js`，随包发布；`pnpm run check:client` 校验是否过期）。
 - 测试在干净环境跑：`scripts/bootstrap-install.mjs` 只在没有显式 home 时才继承 `DSH_PROFILE`，所以从 DSH 会话里跑也不会串 profile。
 - 重启本机 DSH 不能在当前会话的 cgroup 里 `systemctl stop dsh-web`（会连带杀掉会话）；用 `sudo systemd-run --unit=... --collect systemctl restart dsh-web`。
 - 真机验收（Electron、Windows 换包）另开隔离实例，不能拿组件测试冒充。

@@ -211,13 +211,7 @@ export function PurgePage() {
           "p",
           null,
           active[2],
-          __COMMUNITY__
-            ? h(
-                "span",
-                { className: "dshpp-page-ver" },
-                "Ungate " + __PANEL_VERSION__,
-              )
-            : null,
+          h("span", { className: "dshpp-page-ver" }, "Ungate " + __PANEL_VERSION__),
         ),
       ),
     ),
@@ -271,9 +265,7 @@ export function PurgePage() {
     h(
       "footer",
       { className: "dshpp-page-foot" },
-      __COMMUNITY__
-        ? "基于 YuJunZhiXue/dsh-purge 1.1.71 独立维护 · MIT · 保留原作者署名"
-        : "界面独立维护 · 基于 YuJunZhiXue/dsh-purge 1.1.71（MIT）",
+      "基于 YuJunZhiXue/dsh-purge 1.1.71（MIT）· 本 fork 独立维护并保留原作者署名",
     ),
   );
 }

@@ -55,7 +55,7 @@ jobs:
             const fs = require("node:fs");
             const tgz = fs.readdirSync("dist").find((f) => f.endsWith(".tgz"));
             const list = execFileSync("tar", ["-tzf", `dist/${tgz}`], { encoding: "utf8" });
-            const forbidden = ["package/AGENTS.md", "package/docs/maintainer/", "package/market/", "package/test/"];
+            const forbidden = ["package/AGENTS.md", "package/docs/maintainer/", "package/market/", "package/test/", "package/bench/"];
             for (const bad of forbidden) {
               if (list.includes(bad)) {
                 console.error(`${bad} 不应进发行包`);

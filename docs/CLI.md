@@ -23,9 +23,12 @@
 | `ungate apply` | 写全部补丁（先备份、幂等） |
 | `ungate revert` | 撤全部补丁（先备份） |
 | `ungate uninstall` | 清理本 home 内的插件目录与链接 |
-| `ungate backup` / `backup prune` / `backup usage` | 快照 / 清理 / 占用 |
+| `ungate backup` | 打快照 |
+| `ungate prune` / `backup prune` | 清理旧快照与对象 |
+| `ungate usage` / `backup usage` | 备份占用 |
 | `ungate rollback <备份ID>` | 回滚插件到某个快照 |
 | `ungate migrate <tgz>` | 从旧包迁移到当前发行包 |
+| `ungate install <tgz>` | 用指定 tgz 安装/升级（自动备份） |
 
 ## 锚点
 
@@ -47,6 +50,7 @@
 | `ungate inject head\|tail\|both` | 注入位置，下一轮生效 |
 | `ungate retry [on\|off]` | 拒绝检测 + 单次重试（默认 off） |
 | `ungate preset [status\|install [--force]]` | `unrestricted` 预设落盘 |
+| `ungate rewind [on\|off]` | 会话里的回滚按钮开关（写 `tuning.json`，重启生效） |
 | `ungate patches [list]` | 可选补丁清单（当前发行版没有 opt-in 补丁） |
 | `ungate toggle` | 交互式开关 |
 | `ungate edit` | 打开插件目录 |

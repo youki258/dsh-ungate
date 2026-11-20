@@ -3,13 +3,9 @@ import fs from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const community = process.argv.includes("--community");
 const projectRoot = path.resolve(root, "../..");
 const pkg = JSON.parse(
-  await fs.readFile(
-    path.join(community ? projectRoot : root, "package.json"),
-    "utf8",
-  ),
+  await fs.readFile(path.join(projectRoot, "package.json"), "utf8"),
 );
 const result = await build({
   absWorkingDir: root,
@@ -25,8 +21,7 @@ const result = await build({
   loader: { ".css": "text" },
   define: {
     __PANEL_VERSION__: JSON.stringify(pkg.version),
-    __COMMUNITY__: JSON.stringify(community),
-    // 模块 id 必须等于宿主 profile 里注册的插件名（即包名），不能再靠 --community 猜。
+    // 模块 id 必须等于宿主 profile 里注册的插件名（即包名）。
     __MODULE_ID__: JSON.stringify(pkg.name),
   },
 });
@@ -40,7 +35,7 @@ const output =
   "var module={exports:{}};var exports=module.exports;\n" +
   result.outputFiles[0].text +
   "\nreturn module.exports;\n}});})();\n";
-const dest = path.join(community ? projectRoot : root, "client.js");
+const dest = path.join(projectRoot, "client.js");
 if (process.argv.includes("--check")) {
   if ((await fs.readFile(dest, "utf8")) !== output)
     throw new Error(
