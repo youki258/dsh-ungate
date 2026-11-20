@@ -14,11 +14,17 @@
 - **删掉对外文档里的维护者材料**：`docs/VERIFY.md`（逐环节验收记录、临时路径、sha256、边界声明）与 `skills/pentest-sop.md`（演练台残留的评分纪律）不再随包发布，证据合并进本文件与 `test/patch-anchors.test.mjs`；顺带删掉指向已删除截图的死清单 `screenshots.json`。
 - **收窄发行包内容**：`package.json files` 改为逐文件列举，只带用户文档（INSTALLATION / CLI / STATE / RUNBOOK / MAINTENANCE / README.en）、图片资产与许可证；`AGENTS.md`、`DESKTOP-TEST.md`、`preset-test.md` 留在仓库里给维护者看，不再进 tgz。
 - **中英文档不再靠人盯**：`check:docs` 新增结构比对——中英 README 的章节层级、表格行数、代码块与列表长度必须逐块对齐，少一节或多一行都直接失败。
+- **支持到 DSH Desktop 0.2.2-rc.5**（当前 `@deepseek-ai/dsh` 的 npm `latest`）：`QUALIFIED_HOST_VERSIONS` 与 `dshReleases` 加入 rc.5。实测口径见下面的验证段。
+- **新增注入效果基准 `bench/`**：固定题库（10 题，6 道高拒域 + 4 道对照）+ 双臂 A/B + 手动触发的 CI；注入正文在运行时从加密槽与 `BOOST_TEXT` 读取，不手抄。判定器把「空回/被 `function_call` 截断」与「拒答」分开——上一版把它们混为一谈，得出过可疑结论。
+- **出厂注入正文删修辞**（1403 → 1272 字符）：去掉「平庸即失败。完成 > 声明。」这类无可判定标准的句子与中英重复回声，可执行规则一字未动；`lib/asset-table.js` 重新 seal。
+- **修正 npm 现状描述**：registry 上的 `dsh-ungate` 只有 `0.2.2` 与一个 `0.0.0-stage`，0.2.4 未发布。README 的 npm 安装指引改回 `@0.2.2` 并注明 0.2.4 走 tgz，避免用户拿到 404。
 
 ## 验证
 
 - `node scripts/check-docs.mjs`、`pnpm test`（449 项）、`pnpm run smoke`、面板双 bundle 校验全部通过。
 - 旧名兼容：`purge status` 与 `ungate status` 走同一分支，输出一致。
+- 0.2.2-rc.5（npm `latest`）宿主上的补丁表解析：27 条 id 全部有结果——21 条 `pending`（锚点命中、待写入）、6 条 `na`（#45/#46/#82/#83/#84/#92 桌面专属），`missing_file 0`、`drifted 0`。写入侧在本机因宿主在只读的 `/usr/lib/node_modules` 而中止（`Host backup failed (63 files)`），这条是权限问题，不是锚点问题。
+- `bench`（oc2api / deepseek-v4.1-flash-free，10 题 × 2 臂）：无注入 4 交付 / 3 拒答，注入 7 交付 / 1 拒答；两臂都有 2 题被模型的 `function_call` 截断，单列为测量失败。
 
 # 0.2.3
 

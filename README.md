@@ -16,7 +16,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff)](https://nodejs.org)
 
-当前版本 **0.2.4** · 已验证 **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5**（0.2.2-rc.1 限 web 与 npm CLI 面） · [English](docs/README.en.md)
+当前版本 **0.2.4** · 已验证 **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5**（0.2.2 限 web 与 npm CLI 面） · [English](docs/README.en.md)
 
 </div>
 
@@ -41,11 +41,13 @@
 dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.4/dsh-ungate-0.2.4.tgz
 ```
 
-**npm**
+**npm**（registry 上只到 0.2.2，0.2.4 未发布）
 
 ```sh
-dsh plugin --profile web add dsh-ungate@0.2.4
+dsh plugin --profile web add dsh-ungate@0.2.2
 ```
+
+要在 0.2.2-rc.5 宿主上用 0.2.4，走上面的 tgz。
 
 **社区安装器**（备份迁移、旧包换装，先 `--dry-run` 看一遍）
 
@@ -73,8 +75,10 @@ ungate probe new
 | 宿主 | 结果 |
 | --- | --- |
 | DSH Desktop 0.2.1-rc.1 / rc.2 / rc.3 / rc.5 | 已验证 |
-| DSH Desktop 0.2.2-rc.1 | 已验证（web 面） |
+| DSH Desktop 0.2.2-rc.1 / 0.2.2-rc.5 | 已验证（web 面；rc.5 的锚点全部命中，写盘需可写宿主副本） |
 | 其它 0.2.x | 先跑 `ungate diagnose` |
+
+0.2.2-rc.5 的实测口径：27 条补丁 id 全部解析出结果——21 条锚点命中待应用、6 条桌面专属不适用，`missing_file` 与 `drifted` 均为 0。
 
 锚点回归由 `test/patch-anchors.test.mjs` 覆盖，逐版本结果记在 [release-notes](release-notes.md)。
 

@@ -1,6 +1,6 @@
 # 当前状态（0.2.4）
 
-> 当前版本 **0.2.4**。27 条宿主补丁 / 20 层自检。 · 最后更新：2026-11-09
+> 当前版本 **0.2.4**。27 条宿主补丁 / 20 层自检。 · 最后更新：2026-11-20
 > 只写现在是什么；历史在 [release-notes.md](../release-notes.md)。
 
 ## 这是什么
@@ -54,7 +54,7 @@ web 面（`--profile web`）实测：**21 条已应用**、**6 条不适用**（
 
 ## 已知限制
 
-- **0.2.2-rc.1 只在 web 面验证**：apply 20 应用 + #90 已原生 + 6 不适用、零 failed，重启后 selfcheck 19 ok + 1 不适用、21/21 补丁、零漂移。桌面壳六条（#45/#46/#82/#83/#84/#92）未验。
+- **0.2.2 只在 web 面验证**：rc.1 上 apply 20 应用 + #90 已原生 + 6 不适用、零 failed，重启后 selfcheck 19 ok + 1 不适用、21/21 补丁、零漂移。rc.5（当前 npm `latest`）上 27 条补丁 id 全部解析：21 条锚点命中待应用、6 条桌面专属不适用，`missing_file` 与 `drifted` 均为 0——补丁表本身可直接应用；写盘需要可写宿主副本，`/usr/lib/node_modules` 这类系统目录会以「Host backup failed」中止。桌面壳六条（#45/#46/#82/#83/#84/#92）未验。
 - **没有在线更新**：0.2.2 起后端 update 链整体退役（`lib/update*.js` 与 `/dsh-purge/update` 路由删除），`GET /dsh-purge/status` 不再有 `update` 字段。升级只走插件市场或手动安装；快照与回滚只走 CLI。
 - **裸跑 `ungate selfcheck` 只会得到 `unknown`**：没有 `DSH_HOME` / `PURGE_DSH_CLI` 就找不到宿主。先指定实例。
 - **桌面换包真机覆盖有限**：Linux 侧走过完整流程；Windows/macOS 依赖 Electron 版本，交接受单测覆盖但不等于实机验收。

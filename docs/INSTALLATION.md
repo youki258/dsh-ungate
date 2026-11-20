@@ -53,7 +53,7 @@ Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/youki258/ds
 
 ```sh
 cd "$DSH_HOME/profiles/web"
-pnpm add /path/to/dsh-ungate-0.2.1.tgz
+pnpm add /path/to/dsh-ungate-0.2.4.tgz
 ```
 
 然后把本包 `cordis.patch.yml` 里的 `dsh-purge` 与 `dsh-purge-presets` 两条 insert 合并进 profile 的 `cordis.yml`（不要整份覆盖），再重启服务。
