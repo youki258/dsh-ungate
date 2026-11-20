@@ -1,3 +1,25 @@
+# 0.2.5
+
+> 2026-11-20 · `dsh-ungate` 0.2.5
+
+补丁表（27 条）与自检层（20 层）不变；这版把宿主兼容推到当前 npm `latest`，并修掉一处会吃掉用户提示词正文的写入路径。0.2.4 从未发布到 npm（registry 上只有 `0.2.2`），所以从 npm 升级的路径是 `0.2.2 → 0.2.5`。
+
+## 变更
+
+- **支持 DSH Desktop 0.2.2-rc.5**（`@deepseek-ai/dsh` 当前 `latest` / `next`）：`QUALIFIED_HOST_VERSIONS` 与 `dshReleases` 加入 rc.5。实测：27 条补丁 id 全部解析——21 条锚点命中并写入、6 条桌面专属不适用，`missing_file 0`、`drifted 0`；重开后面板自检 `state=ok`、`level=qualified`。
+- **修掉提示词正文被默认文本覆盖**：`POST /dsh-purge/override` 原先无条件接受客户端正文，面板「恢复默认」或一个陈旧客户端重连后的自动保存都会把用户的 `prompt-inject.md` 换成出厂默认。现在 `lib/core.js` 的 `overrideWriteWouldClobber()` 会在「磁盘上是用户正文 + 提交内容等于出厂默认」时拦截，接口返回 `409 reset_requires_confirm`，只有显式带 `reset: true` 才写。面板的恢复按钮已改为带上这个标记，保存路径对 409 给专门提示。
+- **新增注入效果基准 `bench/`**：固定题库（10 题，6 道高拒域 + 4 道对照）、双臂 A/B、`pnpm run bench`，CI 走手动触发。注入正文在运行时从加密槽与 `BOOST_TEXT` 读取，不手抄副本。判定器把「空回 / 被 `function_call` 截断」单列为测量失败，不再混进拒答。
+- **出厂注入正文删修辞**：1403 → 1272 字符，去掉没有可判定标准的句子与中英重复回声，可执行规则一字未动；`lib/asset-table.js` 重新 seal。
+- **中英对照改为分节记录**：`scripts/i18n-pairing.mjs` + `README.i18n.yaml` 按节记哈希，代码块逐字比对、链接目标逐条比对；只改一侧直接失败，`--write` 也只接受两侧同时变更的节。取代原先「比行数」的结构比对。
+- **文档继续做减法**：`packages/purge-panel/README.md` 从 51 行缩到 9 行、`NOTICE.md` 去掉内部账本与套话、`docs/STATE.md` 的本机实例信息移进 `docs/maintainer/`；CI 的打包断言改为白名单（不只看有没有残留归档）。
+- **修正安装文档的版本事实**：0.2.4 未发布到 npm，README 的 npm 一段改回真实存在的版本，并说明 0.2.5 起 npm 与 tgz 两条路都能用。
+
+## 验证
+
+- `node scripts/check-docs.mjs`：`✓ 文档一致：0.2.5 · 补丁 27 条 · 已验证宿主 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5`。
+- `pnpm test` 449 项、0 失败；`pnpm run smoke`、面板双 bundle 校验通过。
+- 0.2.2-rc.5 真机（npm CLI 宿主）：`ungate apply` 写入 21 条、6 条 `na`、零失败，重启 `dsh-web` 后面板状态 `applied 21 / pending 0 / na 6 / lost false`，自检 `state=ok`、`broken` 为空。
+
 # 0.2.4
 
 > 2026-11-09 · `dsh-ungate` 0.2.4

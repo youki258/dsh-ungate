@@ -85,8 +85,11 @@ try {
     env: { ...process.env, DSH_HOME: home },
     encoding: "utf8",
   });
-  if (!out.includes("Purge")) problems.push("status 输出异常");
-  else ok("CLI status 可用");
+  let statusReport = null;
+  try { statusReport = JSON.parse(out); } catch { problems.push("status 不是合法 JSON"); }
+  if (statusReport && statusReport.package !== "dsh-ungate") problems.push(`status 的包名异常：${statusReport.package}`);
+  else if (statusReport && !statusReport.compatibility) problems.push("status 缺少 compatibility 段");
+  else if (statusReport) ok("CLI status 可用");
 
   // 6) 自检在无宿主时给出 broken 而不是抛异常
   const selfcheck = await import(pathToFileURL(path.join(pkgDir, "lib/selfcheck.js")).href);

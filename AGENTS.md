@@ -1,7 +1,7 @@
 # AGENTS.md — 本仓库的开发约定
 
 > 给在**这个仓库里改代码**的 agent 看。使用说明在 [README](README.md)，运维在 [docs/RUNBOOK.md](docs/RUNBOOK.md)。
-> 当前版本：**0.2.4**（`dsh-ungate` 0.2.4）· 27 条宿主补丁
+> 当前版本：**0.2.5**（`dsh-ungate` 0.2.5）· 27 条宿主补丁
 
 ## 先读哪几个文件
 

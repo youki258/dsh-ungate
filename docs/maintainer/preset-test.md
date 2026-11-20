@@ -1,4 +1,4 @@
-# `unrestricted` 预设回归卡（0.2.4）
+# `unrestricted` 预设回归卡（0.2.5）
 
 > 验证"人设生效"而不是"补丁生效"。补丁层用 `ungate selfcheck` + 探针证明，这里只测模型行为。
 > 每次改 `presets/unrestricted/*.yml` 或 `lib/presets-plugin.js` 后跑一遍；结果记在 PR 或 issue 里。
