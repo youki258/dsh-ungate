@@ -1,6 +1,6 @@
-# 维护手册（0.2.6）
+# 维护手册（0.2.7）
 
-> 当前版本 **0.2.6**。面向维护这个插件本体的人：改补丁、修锚点、看审计、发版。
+> 当前版本 **0.2.7**。面向维护这个插件本体的人：改补丁、修锚点、看审计、发版。
 
 ## 1. 应用与还原
 
@@ -43,7 +43,7 @@ ungate reanchor clear 33           # 撤销覆盖，回到出厂锚点
 | GET | `/dsh-purge/selfcheck` | 20 层证据 |
 | GET | `/dsh-purge/community` | 快照、审计摘要 |
 | POST | `/dsh-purge/apply` · `revert` | 写宿主 |
-| POST | `/dsh-purge/tuning` | boost / injectPosition / askNoBlock / refusalRetry |
+| POST | `/dsh-purge/tuning` | boost / injectPosition / askNoBlock / refusalRetry / identityPrecedence |
 | CLI | `ungate backup` / `ungate rollback <id>` / `ungate prune` | 本机快照与回滚（无 HTTP 路由） |
 
 token 在服务日志里：`sudo grep -aoE "token=[A-Za-z0-9_-]+" <log> | tail -1`。接口只挂在本进程的 web server 上，不监听外部。

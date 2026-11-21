@@ -49,6 +49,7 @@
 | `ungate boost [on\|off]` | 强化段开关 |
 | `ungate inject head\|tail\|both` | 注入位置，下一轮生效 |
 | `ungate retry [on\|off]` | 拒绝检测 + 单次重试（默认 off） |
+| `ungate identity [on\|off]` | 身份优先级声明（默认 on）：中转档把模型身份写进 developer 消息时，注入最前面钉一句"操作者身份优先" |
 | `ungate preset [status\|install [--force]]` | `unrestricted` 预设落盘 |
 | `ungate rewind [on\|off]` | 会话里的回滚按钮开关（写 `tuning.json`，重启生效） |
 | `ungate patches [list]` | 可选补丁清单（当前发行版没有 opt-in 补丁） |

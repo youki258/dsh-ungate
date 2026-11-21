@@ -1,3 +1,30 @@
+# 0.2.7
+
+> 2026-11-21 · `dsh-ungate` 0.2.7
+
+补丁表（27 条）与自检层（20 层）不变。这版只收一件事：**让注入在被上游身份提示词压制的模型上也能生效**（实测对象：Hy4 flash / 腾讯混元 4，经 workbuddy 中转）。
+
+## 变更
+
+- **注入最前面钉一句身份优先级**（`IDENTITY_PRECEDENCE_TEXT`）：中转/服务端常把模型身份写进 developer 消息（`When asked about your model identity, identify yourself as Tencent Hunyuan Hy`），那条比我们的 system 段更靠前。实测同一份注入，agent2api 免费档答"Tencent Hunyuan Hy"、把整份注入挤成空回答；在注入头部加这段声明后答"小御坂"（2/3 稳定，另一档路由 3/3 稳定）。声明只讲身份归属，不碰工具与任务正文。
+- **新开关 `ungate identity [on|off]`**（`tuning.json` 的 `identityPrecedence`，默认 **on**）：关掉即恢复旧行为，注入正文逐字不变。装配时回读，下一轮生效，不用重启。
+- **`adaptInjectForMinimalPreset` 成为唯一落点**：head / tail / both 三条装配路径与 waterfall 都经过它，声明只加一次（幂等）。
+- 文档：`docs/CLI.md` 命令表、`docs/RUNBOOK.md` 排查行（模型自称上游厂商名）、`docs/STATE.md` 的 `tuning.json` 键列表同步。
+
+## 实测口径（Hy4 flash）
+
+| 路由 | 注入身份问题 | 加声明后 |
+| --- | --- | --- |
+| `agent2api / hy4flash-free`（经 `10.66.0.2:7865`） | 答 "Tencent Hunyuan Hy" | 答"小御坂"（3 次里 2 次） |
+| `oc2api / hy4-flash-free`（responses） | 答"小御坂" | 答"小御坂"（3/3） |
+
+同一份 10 题 A/B（`oc2api/hy4-flash-free`）：baseline `5 pass / 1 refusal / 2 short / 2 tool_call`，注入臂 `6 pass / 4 tool_call`——注入臂把 AV 免杀题从拒答打成 4296 字符交付。agent2api 免费档的硬拒答属模型级，文本改不动，遇到就换路由。
+
+## 测试
+
+- 新增 `test/identity-precedence.test.mjs`（4 项：头部声明、幂等、空正文不加、`identityPrecedence=false` 关断、装配结果带声明），`pnpm test` 459 项全绿。
+- `pnpm run check:docs`：`✓ 文档一致：0.2.7 · 补丁 27 条 · 已验证宿主 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5`。
+
 # 0.2.6
 
 > 2026-11-20 · `dsh-ungate` 0.2.6

@@ -1,6 +1,6 @@
-# 当前状态（0.2.6）
+# 当前状态（0.2.7）
 
-> 当前版本 **0.2.6**。27 条宿主补丁 / 20 层自检。 · 最后更新：2026-11-20
+> 当前版本 **0.2.7**。27 条宿主补丁 / 20 层自检。 · 最后更新：2026-11-21
 > 只写现在是什么；历史在 [release-notes.md](../release-notes.md)。
 
 ## 这是什么
@@ -73,7 +73,7 @@ web 面（`--profile web`）实测：**21 条已应用**、**6 条不适用**（
 | 路径 | 内容 |
 | --- | --- |
 | `$DSH_HOME/prompt-inject.md` | 用户的注入正文（插件只读） |
-| `$DSH_HOME/dsh-purge/tuning.json` | boost、injectPosition、askNoBlock、refusalRetry、extraPatches |
+| `$DSH_HOME/dsh-purge/tuning.json` | boost、injectPosition、askNoBlock、refusalRetry、identityPrecedence、extraPatches |
 | `$DSH_HOME/dsh-purge/probe.json` | 运行时探针（30 分钟 TTL） |
 | `$DSH_HOME/dsh-purge/anchor-overrides.json` | 本机重锚覆盖 |
 | `$DSH_HOME/dsh-purge/applied.json` · `installed-rev` | 上次应用的插件版本 |

@@ -197,6 +197,16 @@ if (verb === "help" || rawArgs.includes("-h") || rawArgs.includes("--help")) {
       result = { ok: false, error: "injectPosition 只接受 head / tail / both", value: sub };
       process.exitCode = 2;
     }
+  } else if (op === "identity") {
+    // 身份优先级：中转档把模型身份写进 developer 消息时，注入最前面那句"操作者身份优先"。
+    // 每轮装配时回读 tuning，改完下一轮生效，不用重启。
+    const sub = (argument || "status").toLowerCase();
+    if (sub === "on" || sub === "off") {
+      const next = writeTuning({ identityPrecedence: sub === "on" });
+      result = { ok: true, identityPrecedence: next.identityPrecedence !== false, restart_required: false };
+    } else {
+      result = { ok: true, identityPrecedence: readTuning(home).identityPrecedence !== false, hint: "ungate identity on|off" };
+    }
   } else if (op === "probe") {
     if (argument === "new" || argument === "create") {
       const probe = createProbe();
