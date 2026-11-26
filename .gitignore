@@ -8,3 +8,4 @@ audit.jsonl
 .dshpurge.bak
 lib/default-prompt-inject.md
 bench/results/
+bench/banks/pojia-*.json
