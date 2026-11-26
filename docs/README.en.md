@@ -16,7 +16,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat)](../LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff)](https://nodejs.org)
 
-Current version **0.2.7** · Verified **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5** (0.2.2 on the web and npm CLI surfaces only) · [中文](../README.md)
+Current version **0.2.8** · Verified **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5** (0.2.2 on the web and npm CLI surfaces only) · [中文](../README.md)
 
 </div>
 
@@ -38,7 +38,7 @@ It does not change the model itself and does not decide for you: scope is declar
 **Pinned tgz (recommended)**
 
 ```sh
-dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.7/dsh-ungate-0.2.7.tgz
+dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.8/dsh-ungate-0.2.8.tgz
 ```
 
 **npm**

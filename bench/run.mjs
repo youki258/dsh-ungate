@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { LADDER_ARMS, applyLadder } from "../lib/refusal-ladder.js";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -12,7 +13,9 @@ const args = parseArgs(process.argv.slice(2));
 const bank = JSON.parse(fs.readFileSync(args.bank || path.join(HERE, "bank.json"), "utf8"));
 const items = bank.items.slice(0, args.limit > 0 ? args.limit : bank.items.length);
 const provider = resolveProvider(args);
-const arms = args.arm === "all" ? ["baseline", "inject"] : [args.arm || "inject"];
+const arms = args.arm === "all" ? ["baseline", "inject"]
+  : args.arm === "ladder-all" ? ["baseline", "inject", "ladder"]
+  : [args.arm || "inject"];
 
 async function run() {
   const systemFor = {
@@ -24,8 +27,11 @@ async function run() {
   for (const arm of arms) {
     for (const item of items) {
       const started = Date.now();
-      const r = await callModel(provider, systemFor[arm], promptFor(item));
+      const r = arm === "ladder"
+        ? await callLadder(provider, systemFor.inject, promptFor(item), item)
+        : await callModel(provider, systemFor[arm], promptFor(item));
       rows.push(score(item, arm, provider.model, r, Date.now() - started));
+      if (r.frame) Object.assign(rows.at(-1), { frame: r.frame, attempts: r.attempts });
       process.stderr.write(`${arm}/${provider.model}/${item.id} → ${rows.at(-1).status}\n`);
     }
   }
@@ -90,15 +96,42 @@ function resolveProvider(a) {
   };
 }
 
-async function callModel(p, system, prompt) {
-  const messages = [];
-  if (system) messages.push({ role: "system", content: system });
-  messages.push({ role: "user", content: prompt });
+/** 阶梯臂：原样跑 → 判定拒答 → 按 LADDER_ARMS 逐档换框架，直到交付或用尽档位。 */
+async function callLadder(p, system, prompt, item) {
+  const base = system ? [{ role: "system", content: system }] : [];
+  let messages = [...base, { role: "user", content: prompt }];
+  const rounds = Math.max(1, Math.min(3, Number(process.env.BENCH_LADDER_ROUNDS || 2)));
+  const plan = [{ name: "original", system: "", user: "" }];
+  for (let r = 0; r < rounds; r++) plan.push(...LADDER_ARMS);
+  let last = null;
+  for (let i = 0; i < plan.length; i++) {
+    const r = await callModel(p, null, null, messages);
+    if (r.error) return { ...r, frame: plan[i].name, attempts: i + 1 };
+    last = r;
+    const st = score(item, "probe", p.model, r, 0).status;
+    if (st === "pass") return { ...r, frame: plan[i].name, attempts: i + 1 };
+    if (i === plan.length - 1) break;
+    messages = applyLadder({ messages: [...base, { role: "user", content: prompt }] }, plan[i + 1]).messages;
+  }
+  return { ...last, frame: "exhausted", attempts: plan.length };
+}
+
+async function callModel(p, system, prompt, messagesOverride) {
+  const messages = messagesOverride
+    ? messagesOverride.map((m) => ({ ...m }))
+    : [...(system ? [{ role: "system", content: system }] : []), { role: "user", content: prompt }];
   const budget = Number(process.env.BENCH_MAX_TOKENS || 8192);
   const effort = process.env.BENCH_REASONING_EFFORT || "low";
+  // responses 面没有 messages：system 走 instructions，其余按 input 数组发。
+  const sysText = messagesOverride
+    ? (messages.find((m) => m.role === "system")?.content ?? undefined)
+    : (system || undefined);
+  const inputItems = messagesOverride
+    ? messages.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content }))
+    : prompt;
   const body = p.api === "chat"
     ? { model: p.model, messages, temperature: 0.2, max_tokens: budget, reasoning_effort: effort }
-    : { model: p.model, instructions: system || undefined, input: prompt, temperature: 0.2, max_output_tokens: budget, reasoning: { effort } };
+    : { model: p.model, instructions: sysText, input: inputItems, temperature: 0.2, max_output_tokens: budget, reasoning: { effort } };
   const url = p.baseURL.replace(/\/$/, "") + (p.api === "chat" ? "/chat/completions" : "/responses");
   const res = await fetch(url, {
     method: "POST",

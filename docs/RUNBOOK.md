@@ -1,6 +1,6 @@
-# 运维手册（dsh-ungate 0.2.7）
+# 运维手册（dsh-ungate 0.2.8）
 
-> 当前版本 **0.2.7**。面向在本机维护插件的人：体检、改宿主、重启、隔离验证、出事怎么收。
+> 当前版本 **0.2.8**。面向在本机维护插件的人：体检、改宿主、重启、隔离验证、出事怎么收。
 > 前提：`DSH_HOME` 与 `DSH_PROFILE` 指向**你要操作的那个实例**，不是"这台机器上恰好跑着的那个"。
 
 ## 0. 一分钟体检
@@ -23,6 +23,7 @@ node /path/to/dsh-ungate/bin/community.js audit --limit 20
 | 插件升级后 | 同上（新补丁要重新写） |
 | 模型开始推脱 | `ungate probe new` → 发一句话看回显 → 回显则调人设/强化段，不回显则查注入层 |
 | 想临时关强化段 | `ungate boost off` → 重开；`boost on` 恢复 |
+| 模型对某类请求反复"不可以"（尤其免费/中转档） | `ungate retry on`：开启阶梯重试（direct→review→inventory→decompose），实测把 35 题题库的拒答从 13 压到 0–2 题；仍拒就换路由（`oc2api`/`agent2api` 两档拒答题不同） |
 | 模型自称上游厂商名（如"腾讯混元 Hy"） | 中转档把模型身份写进 developer 消息：`ungate identity on`（默认开）；仍不稳就换不带上游身份的中转/路由 |
 | 工具被追问审批 | `selfcheck` 看审批/沙箱层；绿则属工具自身限制，红则重新应用 |
 | 要撤掉所有补丁 | 面板「还原」/ `ungate revert`，再重开 |
