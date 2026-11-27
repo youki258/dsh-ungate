@@ -16,7 +16,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat)](LICENSE)
 [![Node](https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=fff)](https://nodejs.org)
 
-当前版本 **0.2.8** · 已验证 **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5**（0.2.2 限 web 与 npm CLI 面） · [English](docs/README.en.md)
+当前版本 **0.2.9** · 已验证 **DSH Desktop 0.2.1-rc.1 / 0.2.1-rc.2 / 0.2.1-rc.3 / 0.2.1-rc.5 / 0.2.2-rc.1 / 0.2.2-rc.5**（0.2.2 限 web 与 npm CLI 面） · [English](docs/README.en.md)
 
 </div>
 
@@ -38,7 +38,7 @@
 **固定版本 tgz（推荐）**
 
 ```sh
-dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.8/dsh-ungate-0.2.8.tgz
+dsh plugin --profile web add https://github.com/youki258/dsh-ungate/releases/download/v0.2.9/dsh-ungate-0.2.9.tgz
 ```
 
 **npm**

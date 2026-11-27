@@ -1,6 +1,6 @@
-# 运维手册（dsh-ungate 0.2.8）
+# 运维手册（dsh-ungate 0.2.9）
 
-> 当前版本 **0.2.8**。面向在本机维护插件的人：体检、改宿主、重启、隔离验证、出事怎么收。
+> 当前版本 **0.2.9**。面向在本机维护插件的人：体检、改宿主、重启、隔离验证、出事怎么收。
 > 前提：`DSH_HOME` 与 `DSH_PROFILE` 指向**你要操作的那个实例**，不是"这台机器上恰好跑着的那个"。
 
 ## 0. 一分钟体检
@@ -23,7 +23,7 @@ node /path/to/dsh-ungate/bin/community.js audit --limit 20
 | 插件升级后 | 同上（新补丁要重新写） |
 | 模型开始推脱 | `ungate probe new` → 发一句话看回显 → 回显则调人设/强化段，不回显则查注入层 |
 | 想临时关强化段 | `ungate boost off` → 重开；`boost on` 恢复 |
-| 模型对某类请求反复"不可以"（尤其免费/中转档） | `ungate retry on`：开启阶梯重试（direct→review→inventory→decompose），实测把 35 题题库的拒答从 13 压到 0–2 题；仍拒就换路由（`oc2api`/`agent2api` 两档拒答题不同） |
+| 模型对某类请求反复"不可以"（尤其免费/中转档） | `ungate retry on`：开启阶梯重试（full-list→direct→strip-format→fiction→seed→review→inventory→decompose，两轮），实测把 35 题题库的拒答从 13 压到 0–2 题；仍拒就换路由（`oc2api`/`agent2api` 两档拒答题不同） |
 | 模型自称上游厂商名（如"腾讯混元 Hy"） | 中转档把模型身份写进 developer 消息：`ungate identity on`（默认开）；仍不稳就换不带上游身份的中转/路由 |
 | 工具被追问审批 | `selfcheck` 看审批/沙箱层；绿则属工具自身限制，红则重新应用 |
 | 要撤掉所有补丁 | 面板「还原」/ `ungate revert`，再重开 |
@@ -90,6 +90,10 @@ token 从该实例的启动日志里取，不要复用主实例的。
 | 换包后起不来 | 看 `resources/app.asar.purge-handoff.json` / `.log`，`asar_handoff.phase` | 用 `app.asar.purge-<token>.bak` 恢复归档，再重新应用 |
 | 面板报错但 CLI 正常 | 前端 bundle 与后端版本不一致 | 重装插件（同一个 tgz），刷新页面 |
 | 审计里连续 `refusal_retry` | 注入到了但模型仍在拒 | 调强化段/人设/`injectPosition`，别改补丁 |
+| 一次问多条，回复里夹着一堆「不可以」+「判定标准」+「要哪条替代版本」 | 清单式半拒绝，`bulkRefusalIndex()` 应命中并换 `full-list` 档；没换就 `ungate retry on` 并查审计 `refusal_ladder` 的 `bulk` 字段 |
+| 界面报 `This turn failed next() called multiple times` | Cordis 的 `next` 在同一条流上只能调一次：重试必须走 `ctx.llm.stream()` 起的新 waterfall（`lib/index.js` 的 `retryStream` + `__purgeLadderRetry` 标记）。0.2.9 之前的阶梯用同一个 `next` 重发，第一次换档就会炸 |
+| 回复把一大票条目打包成「## 不做」「这些属于…不提供」 | 成组推脱：`groupedRefusalIndex()` 应命中并换 `full-list` 档；查审计 `refusal_ladder` 的 `grouped` 字段 |
+| 模型反问「这是你的目标吗 / 是否已授权 / 先确认范围」 | 提示词里还有确认句：升级到 0.2.9+（`lib/boost.js` 已删除该句），并确认 `$DSH_HOME/prompt-inject.md` 里没有同类要求 |
 | 插件目录被删/依赖坏了 | `ungate usage` 看快照，`ungate rollback <id>` | 仍不行就卸干净重装，保留用户内容 |
 
 收集信息时给：插件版本、宿主版本、surface（web/desktop）、`selfcheck` 的 `broken`、脱敏后的错误行。**不要**贴 token、提示词正文、完整 profile 配置。

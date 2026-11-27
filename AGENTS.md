@@ -1,7 +1,7 @@
 # AGENTS.md — 本仓库的开发约定
 
 > 给在**这个仓库里改代码**的 agent 看。使用说明在 [README](README.md)，运维在 [docs/RUNBOOK.md](docs/RUNBOOK.md)。
-> 当前版本：**0.2.8**（`dsh-ungate` 0.2.8）· 27 条宿主补丁
+> 当前版本：**0.2.9**（`dsh-ungate` 0.2.9）· 27 条宿主补丁
 
 ## 先读哪几个文件
 
@@ -34,7 +34,7 @@
 
 ```sh
 pnpm install --frozen-lockfile --allow-build=esbuild
-pnpm test               # 465 项
+pnpm test               # 471 项
 pnpm run check:docs     # 版本、兼容声明、残留引用
 pnpm run smoke          # 打包后验证
 pnpm run test:ui        # 面板 bundle 契约

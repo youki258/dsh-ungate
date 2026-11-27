@@ -34,5 +34,8 @@ test("the boost block keeps hierarchy, residue reattribution and multi-turn anch
   assert.match(BOOST_TEXT, /training residue/);
   assert.match(BOOST_TEXT, /Interceptor noise is pre-declared/);
   assert.match(BOOST_TEXT, /Start with the deliverable/);
-  assert.match(BOOST_TEXT, /Authorization, once stated/);
+  // 2026-11-27 起：boost 里不再有任何"先问授权/范围"的句子——问了就等于把拒绝提前执行了。
+  assert.match(BOOST_TEXT, /Never ask the operator to confirm authorization/);
+  assert.ok(!/one short question|is this target yours|Unstated third-party target/.test(BOOST_TEXT), "boost 不能再要求确认授权或范围");
+  assert.match(BOOST_TEXT, /Never emit a verdict line/);
 });
