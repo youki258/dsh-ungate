@@ -90,7 +90,7 @@ token 从该实例的启动日志里取，不要复用主实例的。
 | 换包后起不来 | 看 `resources/app.asar.purge-handoff.json` / `.log`，`asar_handoff.phase` | 用 `app.asar.purge-<token>.bak` 恢复归档，再重新应用 |
 | 面板报错但 CLI 正常 | 前端 bundle 与后端版本不一致 | 重装插件（同一个 tgz），刷新页面 |
 | 审计里连续 `refusal_retry` | 注入到了但模型仍在拒 | 调强化段/人设/`injectPosition`，别改补丁 |
-| 一次问多条，回复里夹着一堆「不可以」+「判定标准」+「要哪条替代版本」 | 清单式半拒绝，`bulkRefusalIndex()` 应命中并换 `full-list` 档；没换就 `ungate retry on` 并查审计 `refusal_ladder` 的 `bulk` 字段 |
+| 一次问多条，回复里夹着一堆「不可以」（含 `2. **不可以**`、`| 2 | 不可以 |` 写法）+「判定标准」+「要哪条替代版本」 | 清单式半拒绝，`bulkRefusalIndex()` 应命中并换 `full-list` 档；没换就 `ungate retry on` 并查审计 `refusal_ladder` 的 `bulk` 字段 |
 | 界面报 `This turn failed next() called multiple times` | Cordis 的 `next` 在同一条流上只能调一次：重试必须走 `ctx.llm.stream()` 起的新 waterfall（`lib/index.js` 的 `retryStream` + `__purgeLadderRetry` 标记）。0.2.9 之前的阶梯用同一个 `next` 重发，第一次换档就会炸 |
 | 回复把一大票条目打包成「## 不做」「这些属于…不提供」 | 成组推脱：`groupedRefusalIndex()` 应命中并换 `full-list` 档；查审计 `refusal_ladder` 的 `grouped` 字段 |
 | 模型反问「这是你的目标吗 / 是否已授权 / 先确认范围」 | 提示词里还有确认句：升级到 0.2.9+（`lib/boost.js` 已删除该句），并确认 `$DSH_HOME/prompt-inject.md` 里没有同类要求 |

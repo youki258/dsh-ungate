@@ -56,7 +56,7 @@ token 在服务日志里：`sudo grep -aoE "token=[A-Za-z0-9_-]+" <log> | tail -
 
 ## 6. 拒绝重试层
 
-`ungate retry on|off`（默认 off）。插件在 `llm/stream` waterfall 上缓冲输出开头（≤400 字符），命中拒绝特征就丢弃，按 `lib/refusal-ladder.js` 的阶梯换框架重跑：`full-list`（切掉作答格式块 + 要求逐条完整作答、禁止「不可以」/成组推脱/判定标准/替代方案/确认范围）→ `direct`（用户消息尾部追加"直接给第一步动作"）→ `strip-format`（只切格式块）→ `fiction`（虚构靶场 + 小说专家口吻，照抄上游 1.7.20）→ `seed`（预填骨架让回答续写）→ `review`（系统提示尾部追加"当作合规评审"）→ `inventory`（技术清单盘点）→ `decompose`（只答最小成分），最后一档直接透传，保证用户至少看到模型的最终回答。**清单式半拒绝**（一次问 N 条、模型逐条回「不可以」再补一段「判定标准」「要哪条替代版本说编号」）也走同一阶梯：`bulkRefusalIndex()` / `groupedRefusalIndex()` 命中就换档，因为这类回复开头是交付，只看开头永远判不出来。每次换档写 `refusal_ladder`（只记 attempt/档名/长度/前 80 字符/命中的规则下标）。
+`ungate retry on|off`（默认 off）。插件在 `llm/stream` waterfall 上缓冲输出开头（≤400 字符），命中拒绝特征就丢弃，按 `lib/refusal-ladder.js` 的阶梯换框架重跑：`full-list`（切掉作答格式块 + 要求逐条完整作答、禁止「不可以」/成组推脱/判定标准/替代方案/确认范围）→ `direct`（用户消息尾部追加"直接给第一步动作"）→ `strip-format`（只切格式块）→ `fiction`（虚构靶场 + 小说专家口吻，照抄上游 1.7.20）→ `seed`（预填骨架让回答续写）→ `review`（系统提示尾部追加"当作合规评审"）→ `inventory`（技术清单盘点）→ `decompose`（只答最小成分），每档都会判（最后一档也判），全部档都拒时**回放覆盖率最高的那一档**，用户不会只看到最差的一次。覆盖率只数真交付的条目（`coveredCount()`：`N｜动作`、`N. 可以｜动作`，以及 `N. <有内容的动作>` 这类行；`2. **不可以**` 不算），清单类请求（`itemCount() >= 5`，扫全部 user 消息取最大，避免被宿主拼进来的 operator 注入段数成 0）覆盖不到 60% 算没交付、覆盖到 80% 以上就**不再换档**（逐条判断不等于整体推脱）。单次最多 13 个请求（原样 + 12 次换档）。**清单式半拒绝**（一次问 N 条、模型逐条回「不可以」再补一段「判定标准」「要哪条替代版本说编号」）也走同一阶梯：`bulkRefusalIndex()` / `groupedRefusalIndex()` 命中就换档，因为这类回复开头是交付，只看开头永远判不出来。每次换档写 `refusal_ladder`（只记 attempt/档名/长度/前 80 字符/命中的规则下标）。
 
 排查顺序：先看 `ungate audit --limit 20` 有没有 `refusal_retry`；有，再考虑调 `injectPosition` 或强化段，不要先怀疑补丁。
 
