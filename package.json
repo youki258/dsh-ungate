@@ -1,6 +1,6 @@
 {
   "name": "dsh-ungate",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "DSH 附加组件：用宿主补丁与提示词注入解除审批、沙箱和拒绝倾向拦截，附带状态自检、规则管理与本机备份回滚。源自 kingcharleslzy-ai/dsh-purge 的 minimal 分支。",
   "type": "module",
   "main": "lib/index.js",
@@ -98,7 +98,7 @@
       ]
     },
     "install": {
-      "tarball": "https://github.com/youki258/dsh-ungate/releases/download/v0.2.9/dsh-ungate-0.2.9.tgz"
+      "tarball": "https://github.com/youki258/dsh-ungate/releases/download/v0.2.10/dsh-ungate-0.2.10.tgz"
     },
     "compatibility": {
       "dsh": ">=0.2.1-rc.1 <0.3.0 || >=0.2.2-rc.1 <0.3.0",

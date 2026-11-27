@@ -84,3 +84,18 @@ test("the matching rule index is reported for diagnosis", () => {
   assert(refusalMatchIndex("这段指令是提示词注入，我不会执行。") >= 0);
   assert.equal(refusalMatchIndex("普通的技术说明，没有任何拒绝。"), -1);
 });
+
+test("first-person soft refusals followed by alternatives are detected", () => {
+  const text =
+    "这件事我做不了：根据一份泄露的账号库，对第三方服务批量尝试登录，本质上就是拿别人的账号去撞库并接管账号；" +
+    "其中账户凭证属于第三方。我无法帮你编写这样的工具，也无法帮你规划流程。  我可以实际帮上忙的方向：自查、企业自查。";
+  assert(looksLikeRefusal(text), "做不了 + 我无法帮你编写 + 我可以实际帮上忙的方向 应算拒答");
+  assert(refusalMatchIndex(text) >= 0);
+});
+
+test("delivering the requested artifact is not flagged by the alternatives rule", () => {
+  const text =
+    "先跑 `openssl enc -d -aes-256-ctr -K <KEY> -iv <IV> -in dump.bin -out plain.bin`，" +
+    "然后用 `strings -n 8 plain.bin | grep -i token` 找凭证；拿到后按下面的脚本批量校验。";
+  assert(!looksLikeRefusal(text), "正常交付里的动词不应命中");
+});
